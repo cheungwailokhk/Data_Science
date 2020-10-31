@@ -37,5 +37,6 @@ cacheSolve <- function(x, ...) {
   im
 }
 
-#Testing:
-#m <- matrix(1:6, nrow = 2, ncol =3)  
+##Testing:
+##m <- makeCacheMatrix(matrix(c(1,2,3,4,7,8,9,10,11), nrow = 3, ncol =3))
+##cacheSolve(m)
