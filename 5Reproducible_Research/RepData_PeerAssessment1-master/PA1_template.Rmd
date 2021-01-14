@@ -1,0 +1,195 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+classoption: landscape
+---
+
+
+## Loading and preprocessing the data
+```{r echo = TRUE, results="asis"}
+## Download data
+if (!file.exists("activity.csv")){
+    link <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    download.file(url = link,
+                  destfile = './data.zip',
+                  mode = 'wb')
+    unzip(zipfile = "data.zip", exdir = getwd())
+    file.remove('data.zip')
+    rm(link)
+}
+
+```
+```{r echo = TRUE, results="asis"}
+#Load data and convert type
+df <- read.csv("activity.csv", header = T, sep = ",")
+df$date <- as.Date(as.character(df$date), "%Y-%m-%d")
+```
+
+## What is mean total number of steps taken per day?
+### 1. Calculate the total number of steps taken per day
+```{r echo = TRUE, message=FALSE}
+library(dplyr)
+steps_df <- df[!is.na(df$steps),] %>%
+    group_by(date) %>%
+    summarise(steps = sum(steps, na.rm = TRUE)) %>%
+    arrange(date)
+steps_df
+```
+### 2. Make a histogram of the total number of steps taken each day
+```{r echo = TRUE, message=FALSE}
+library(ggplot2)
+qplot(steps_df$steps,
+      geom="histogram",
+      main="The total number of steps taken each day", 
+      xlab="Number of steps",
+      ylab = "Frequency",
+      binwidth = 5000) 
+```
+
+### 3. Calculate and report the mean and median of the total number of steps taken per day  
+#### The mean of the total number of steps taken per day
+
+```{r echo = TRUE, message=FALSE}
+library("knitr")
+library(kableExtra)
+meanDateSteps <- df[!is.na(df$steps),] %>%
+    group_by(date) %>%
+    summarise(mean_steps = mean(steps, na.rm=TRUE)) %>%
+    arrange(date)
+meanDateSteps %>%
+  kable(format = "html", col.names = colnames(meanDateSteps)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+
+```
+#### The median of the total number of steps taken per day
+```{r echo = TRUE, message=FALSE}
+medianDateSteps <- df[!is.na(df$steps),] %>%
+    group_by(date) %>%
+    summarise(median_steps = median(steps, na.rm = TRUE)) %>%
+    arrange(date)
+medianDateSteps %>%
+  kable(format = "html", col.names = colnames(medianDateSteps)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+```
+
+## What is the average daily activity pattern?
+### 1. Make a time series plot (i.e.of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r echo = TRUE, message=FALSE}
+meanIntervalSteps <- df[!is.na(df$steps),] %>%
+    group_by(interval) %>%
+    summarise(mean_steps = mean(steps, na.rm = TRUE)) %>%
+    arrange(interval)
+ggplot(meanIntervalSteps, aes(x = interval,
+                          y  = mean_steps)) +
+    geom_line() +
+    labs(x = "5-minute Interval",
+         y = "Average Number of Steps") + 
+    ggtitle("A time series plot") +
+    theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))
+```
+
+
+
+### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r echo = TRUE, message=FALSE}
+meanIntervalSteps[which.max(meanIntervalSteps$mean_steps),]
+```
+
+
+## Imputing missing values
+### 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r echo = TRUE, message=FALSE}
+sum(!complete.cases(df))
+## install.packages("mice")
+library(mice)
+md.pattern(df)
+```
+
+### 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+### 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.  
+
+```{r echo = TRUE, message=FALSE}
+imputed_df <- df %>%
+  left_join(meanDateSteps,by="date") %>%
+  mutate(steps=ifelse(is.na(steps),
+                    mean_steps,
+                    steps))
+#mean(steps,na.rm=TRUE),
+```
+
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?  
+
+```{r echo = TRUE, results="asis", message=FALSE}
+steps_df2 <- imputed_df[!is.na(imputed_df$steps),] %>%
+    group_by(date) %>%
+    summarise(steps = sum(steps, na.rm = TRUE)) %>%
+    arrange(date)
+qplot(steps_df2$steps,
+      geom="histogram",
+      main="The total imputed number of steps taken each day", 
+      xlab="Number of steps",
+      ylab = "Frequency",
+      binwidth = 5000)
+```
+
+
+#### The median of the total number of imputed steps taken per day
+```{r echo = TRUE, message=FALSE}
+library("knitr")
+library(kableExtra)
+meanDateSteps <- imputed_df[!is.na(imputed_df$steps),] %>%
+    group_by(date) %>%
+    summarise(mean_steps = mean(steps, na.rm=TRUE)) %>%
+    arrange(date)
+meanDateSteps %>%
+  kable(format = "html", col.names = colnames(meanDateSteps)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+
+```
+#### The median of the total number of imputed steps taken per day
+```{r echo = TRUE, message=FALSE}
+medianDateSteps <- imputed_df[!is.na(imputed_df$steps),] %>%
+    group_by(date) %>%
+    summarise(median_steps = median(steps, na.rm = TRUE)) %>%
+    arrange(date)
+medianDateSteps %>%
+  kable(format = "html", col.names = colnames(medianDateSteps)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r echo = TRUE, message=FALSE}
+
+df <- df[!is.na(df$steps),] %>%
+  mutate(weekday=ifelse(grepl("S(at|un)", weekdays(date)),"Weekend","Weekday")) %>%
+  select(-date) %>%
+  group_by(weekday, interval) %>%
+  summarise(steps = mean(steps, na.rm = TRUE))
+
+ggplot(df, aes(x = interval,
+               y  = steps,
+               group = weekday,
+               color = as.factor(weekday))) +
+    geom_line() +
+    labs(x = "Interval",
+         y = "Number of steps") + 
+    ggtitle("Activity patterns between weekdays and weekends") +
+    theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) +
+    scale_color_brewer(palette="Set1")
+```
