@@ -1,0 +1,198 @@
+---
+title: "Reproducible Research: Peer Assessment 2"
+writer: wlc
+output: 
+  html_document:
+    keep_md: true
+classoption: landscape
+---
+
+## Title: Across the United States, which types of events are most harmful with respect to population health, and which types of events have the greatest economic consequences?
+
+
+### Synopsis: 
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern. 
+
+So we are concerned about which types of events are most harmful with respect to population health, and which types of events have the greatest economic consequences? After exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database, we conclude that tornados are the most harmful event to population health, while floods have the greatest economic consequences.
+
+### Data Processing
+We have few steps in data processing. 
+1. load data
+2. examine data
+3. data selection
+4. data conversion
+
+### 1. Load data
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+## Load libraries
+setwd("/Users/l/Documents/Google_Drive/Workplace-JP/Workspace/R/datasciencecoursera/5Reproducible_Research/RepData_PeerAssessment2")
+
+library("knitr")
+library(kableExtra)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+# install.packages("stopwords")
+library(stopwords)
+# install.packages("tokenizers")
+library(tokenizers)
+
+# Load data
+link <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+df <- read.csv("repdata_data_StormData.csv.bz2", stringsAsFactors = FALSE, strip.white=TRUE, header=TRUE)
+rm(link)
+```
+
+### 2. Examine data
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Preview data
+str(df)
+dim(df)
+
+```
+### 3. Data selection
+We find out only the following columns are needed, and therefore select them.
+- BGN_DATE: the beginning date
+- EVTYPE: types of events 
+- FATALITIES: number of deaths
+- INJURIES:  number of injuries
+- PROPDMG: the cost of property damage
+- PROPDMGEXP: the unit for the property damage 
+- CROPDMG: the cost crop damages
+- CROPDMGEXP: the unit for the crop damage
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Select necessary columns
+df <- select(df, "BGN_DATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")
+```
+### 4. Data conversion
+Update the units and types
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Update data types
+df$BGN_DATE <- as.Date(as.character(df$BGN_DATE),format="%m/%d/%Y %H:%M:%S")
+
+# Update units 
+df <- df %>% 
+  mutate(PROPDMGEXP = dplyr::recode(
+    PROPDMGEXP,"H" = 10^2L, "K" = 10^3L,"M" = 10^6L,"B" = 10^9L, "-" = 1,
+                  "+" = 1, "?" = 1, .default = 1, .missing = 1))
+df$PropertyLoss <- df$PROPDMG * df$PROPDMGEXP 
+
+df <- df %>% 
+  mutate(CROPDMGEXP = dplyr::recode(
+    CROPDMGEXP,"H" = 10^2L, "K" = 10^3L,"M" = 10^6L,"B" = 10^9L, "-" = 1,
+                  "+" = 1, "?" = 1, .default = 1, .missing = 1))
+
+df$CropLoss <- df$CROPDMG * df$CROPDMGEXP 
+
+#Examine unique types of events
+unique(toupper(df$EVTYPE))
+```
+We can see that some events should be considered as the same event. e.g.<[124] "SEVERE THUNDERSTORM" , [125] "SEVERE THUNDERSTORMS" > So we remove all special characters, and find the word stems.
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+
+# Remove all special characters in EVTYPE column
+df$EVTYPE <- gsub("[[:punct:]]", " ", df$EVTYPE)
+
+# Find word stems
+stems <- lapply(df$EVTYPE, function(x) paste(tokenize_word_stems(x, stopwords = stopwords::stopwords("en"), simplify = TRUE), collapse = " "))
+
+# Update event names
+df$EVENT <- as.character(stems)
+rm(stems)
+
+# Examine top 100 events
+head(df, 100) %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+```
+
+### Results
+#### The most harmful event types to population health
+We consider the most harmful event brought the highest number of fatalities and injuries. So we sort out the top 10 harmful events by calculating the sum of them. As a result, we can see that tornado is the most harmful event.
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+health_df <- df %>% 
+  group_by(EVENT) %>% 
+  summarise(FATALITIES = sum(FATALITIES), INJURIES = sum(INJURIES)) %>%  
+  arrange(desc(FATALITIES+INJURIES))
+
+# Reduce data to only top 10 harmful events,and summarize the rest into "Other"
+other_df <- tail(health_df, nrow(health_df) - 10) 
+
+health_df <- head(health_df, 10) %>%
+  rbind(data.frame(EVENT = "other", FATALITIES = sum(other_df$FATALITIES), INJURIES = sum(other_df$INJURIES)))
+
+rm(other_df)
+
+# Gather dataframe for the plot
+health_df <- health_df %>% 
+  gather(RESULT, NUMBERS, FATALITIES, INJURIES)
+
+## order by frequency, the most frequent bar coming first.
+ggplot(health_df, aes(x = reorder(EVENT, -NUMBERS),
+               y  = NUMBERS,
+               fill = factor(RESULT),
+               color = factor(RESULT))) +
+  geom_bar(stat = "identity")+
+    labs(x = "Events",
+         y = "Number of casualties") + 
+    ggtitle("The most harmful event types to population health") +
+    theme(
+      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) +
+    scale_color_brewer(palette="Set1")
+
+```
+
+#### Types of events have the greatest economic consequences
+
+We consider the events have the greatest economic consequences by bringing the highest number of property and crop losses.So we find out the number of losses. We can see that flood have the greatest economic consequences.
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+econ_df <- df %>% 
+  group_by(EVENT) %>% 
+  summarise(PropertyLoss = sum(PropertyLoss), CropLoss = sum(CropLoss)) %>%  
+  arrange(desc(PropertyLoss+CropLoss))
+
+# Reduce data to only top 10 harmful events,and summarize the rest into "Other"
+other_df <- tail(econ_df, nrow(econ_df) - 10) 
+
+econ_df <- head(econ_df, 10) %>%
+  rbind(data.frame(EVENT = "other", CropLoss = sum(other_df$CropLoss), PropertyLoss = sum(other_df$PropertyLoss)))
+
+rm(other_df)
+
+# Gather dataframe for the plot
+econ_df <- econ_df %>% 
+  gather(RESULT, NUMBERS, PropertyLoss, CropLoss)
+
+## order by frequency, the most frequent bar coming first.
+ggplot(econ_df, aes(x = reorder(EVENT, -NUMBERS),
+               y  = NUMBERS / 10^6,
+               fill = factor(RESULT),
+               color = factor(RESULT))) +
+  geom_bar(stat = "identity")+
+    labs(x = "Events",
+         y = "Monetary loss (million)") + 
+    ggtitle("The events have the greatest economic consequences ") +
+    theme(
+      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) +
+    scale_color_brewer(palette="Set1")
+
+```
+
+### Conclusion
+We conclude that:  
+
+- Across the United States, tornados are the most harmful event to population health;
+- Across the United States, floods have the greatest economic consequences.
