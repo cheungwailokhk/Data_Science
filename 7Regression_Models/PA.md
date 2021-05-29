@@ -3,7 +3,7 @@ writer: wlc
 output:
   html_document:
     keep_md: yes
-  sansfont: Arial
+  always_allow_html: true
   pdf_document:
     latex_engine: xelatex
 classoption: landscape

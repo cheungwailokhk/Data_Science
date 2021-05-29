@@ -1,6 +1,7 @@
 base
 ggplot2
+MASS
+plotly
 carData
 car
 GGally
-MASS

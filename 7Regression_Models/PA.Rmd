@@ -1,14 +1,15 @@
 ---
 writer: wlc
 output:
-  html_document:
-    keep_md: yes
-  sansfont: Arial
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    keep_md: yes
 classoption: landscape
 editor_options: 
   chunk_output_type: console
+
+always_allow_html: true
 ---
 
 ## Peer-graded Assignment: Regression Models Course Project
