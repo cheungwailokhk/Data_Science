@@ -1,14 +1,13 @@
 ---
 writer: wlc
 output:
-  pdf_document:
-    latex_engine: xelatex
   html_document:
     keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
 classoption: landscape
 editor_options: 
   chunk_output_type: console
-
 always_allow_html: true
 ---
 
@@ -272,14 +271,7 @@ require(MASS)
 step <- stepAIC(fit, direction="backward")
 ```
 
-### Appendix C: Models visualization
-**Model with factor variables**
-``` Automatic transmission: mpg = 9.6178 -3.9165(wt)  + 1.2259(qsec)```
-``` Manual transmission: mpg = 9.6178 + 2.9358 * 1 -3.9165(wt)  + 1.2259(qsec)```
-
-
-
-### Appendix D: Diagnostic plots
+### Appendix C: Diagnostic plots
 
 ```{r echo = FALSE, message=FALSE, cache=TRUE}
 # Diagnostic plots
