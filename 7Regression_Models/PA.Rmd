@@ -1,0 +1,287 @@
+---
+writer: wlc
+output:
+  html_document:
+    keep_md: yes
+  sansfont: Arial
+  pdf_document:
+    latex_engine: xelatex
+classoption: landscape
+editor_options: 
+  chunk_output_type: console
+---
+
+## Peer-graded Assignment: Regression Models Course Project
+**Introduction**: You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+1. Is an automatic or manual transmission better for MPG
+
+2. Quantify the MPG difference between automatic and manual transmissions
+
+### 1 Load the mtcars data and perform some basic exploratory data analyses. 
+<br/>
+According to the description, the data contains 32 observations on 11 (numeric) variables.
+
+1.	MPG	Miles/(US) gallon
+2.	cyl	Number of cylinders
+3.	disp	Displacement (cu.in.)
+4.	hp	Gross horsepower
+5.	drat	Rear axle ratio
+6.	wt	Weight (1000 lbs)
+7.	qsec	1/4 mile time
+8.	vs	Engine (0 = V-shaped, 1 = straight)
+9.	am	Transmission (0 = automatic, 1 = manual)
+10.	gear	Number of forward gears
+11.	carb	Number of carburetors
+
+The data structure is:
+```{r echo = FALSE, message=FALSE, cache=TRUE}
+# Load data
+data(mtcars)
+
+# Preview data structure
+str(mtcars)
+```
+
+
+### 2. Provide a basic summary of the MPG verus transmissions (automatic and manual)
+
+```{r echo = FALSE, message=FALSE, cache=TRUE, fig.height=3.2, fig.width = 3.2}
+# Preview data by a boxplot
+require(ggplot2)
+g2 <- ggplot(mtcars, aes(x = factor(am), y = mpg, fill = am)) +
+    geom_boxplot() +
+    ggtitle("MPG/Transmissions") +
+    scale_x_discrete("Transmission, 0=automatic, 1=manual") +   
+    scale_y_continuous("Miles/(US) gallon") +
+    theme(legend.position = "none")
+g2
+```
+
+From this plot, it appeared that a manual transmission was better than an automatic transmission for MPG. More basic summaries in Appendix A also suggested that the manual transmission was better.
+
+However, in the above plot, transmission was not adjusted for other terms. From the multivariable comparison chart in Appendix A, MPG was obviously correlated with many terms. 
+
+So, we wanted fit the data with a model with only necessary terms.
+
+
+### 3. Models Selection
+From the multivariable comparison chart in the Appendix A, we saw that variables were correlated. So, MPG might not be affected only by transmission(am), but also by some other factors. 
+
+To avoid unnecessary terms and include only necessary terms in our model, we applied a backward selection approach to fit our model. This method slowly removed one factor at a time, starting with the term with the highest p-value. 
+
+We took out the term with the highest p-value if its p-value were higher than above a specified p-value threshold (5%). We updated the model and checked the next term with the highest P-value. This continued until all the remaining terms in the model were below a specified p-value threshold.
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Initial our model with all terms
+fit <- lm(mpg ~ . , data = mtcars)
+# Show initial P-values 
+summary(fit)$coef
+```
+```{r echo = TRUE, message=FALSE, cache=TRUE, results = 'hide'}
+# Start the backward selection approach
+require(MASS)
+step <- stepAIC(fit, direction="backward")
+```
+Steps can be found in the Appendix B.
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+step$anova # display results 
+# Update our model
+fit_combined <- update(fit, mpg ~  wt + qsec + factor(am), data = mtcars)
+# Show final P-values 
+summary(fit_combined)
+```
+As a result, all P-values were smaller than 5%. So, according to our criterion, we could reject there were no difference between our terms and MPG, which suggested that these three interaction terms were necessary.
+
+Since factor(am)1 was maller than 5%, it implied there was difference for MPG between automatic and manual transmission.
+ 
+Besides, the adjusted R-squared was 0.8336, meaning that 83.36% of the variance of the 
+MPG could be explained by this model.
+
+
+### Model Adjustment
+#### a. Model with factor variables
+Since we wanted to know if there was any difference between automatic and manual transmission to MPG, and the model already included them with all necessary terms.
+
+We saw that in addition to the intercept(referred to MPG), and slopes for "wt" and "qsec", there was a third variable ‘factor(am)1’. When lm() encountered a factor variable with two levels, it created a new variable based on the second level.
+
+In our case, the term "am" was a binary variable that took the value 1 if the transmission was manual, and 0 if it was automatic, and therefore ‘factor(am)1’ is created.  The fitted equation for two groups can be written as 
+
+``` Automatic transmission: mpg = 9.6178 -3.9165(wt)  + 1.2259(qsec)```
+``` Manual transmission: mpg = 9.6178 + 2.9358 * 1 -3.9165(wt)  + 1.2259(qsec) ```
+
+As a result, if the transmission is manual, we will consider the term "2.9358(manual)", otherwise, we will ignore the term "2.9358(manual)".
+
+We can see that the slopes for "wt and "qsec" are the same. The intercept for automatic transmission is 9.6178. The intercept for a manual transmission is 9.6178 + (2.9358 * 1) = 12.5536. 
+
+
+```{r echo = FALSE, message=FALSE, cache=TRUE, warning=FALSE, }
+# Update our variables
+fit_combined <- lm(mpg ~  wt + qsec + factor(am), data = mtcars)
+coe <- coefficients(fit_combined)
+xx <- mtcars$wt
+yy <- mtcars$qsec
+color_palette <-  colorRampPalette(c("red","blue"))
+
+### Calculate z on a grid of x-y values for the regression plane
+xx.seq <- seq(min(xx),max(xx),length.out=25)
+yy.seq <- seq(min(yy),max(yy),length.out=25)
+# predict MPG for the automatic tranmission
+zz_auto <- t(outer(xx.seq, yy.seq, function(x,y) coe[1]+coe[2]*x+coe[3]*y))
+# predict MPG for the manual  tranmission
+zz_manual <- t(outer(xx.seq, yy.seq, function(x,y) coe[1]+coe[4]+coe[2]*x+coe[3]*y))
+
+require("plotly")
+plot_ly() %>%
+    add_trace(df = ~mtcars, x =  mtcars$wt, y = mtcars$qsec, z = mtcars$mpg, 
+              type = "scatter3d", mode = "text+markers", 
+              color = factor(mtcars$am), colors = color_palette(2),
+              marker = list(size = 6)) %>%
+    add_trace(x=~xx.seq, y=~yy.seq, z=~zz_auto,
+              colorscale=list(c(0, "rgb(63, 63, 63"), list(1, "rgb(63, 63, 63)")),
+              showscale=FALSE,
+              type="surface")%>%
+    add_trace(x=~xx.seq, y=~yy.seq, z=~zz_manual,
+              colorscale=list(c(0, "rgb(133, 133, 133"), list(1, "rgb(133, 133, 133)")),showscale=FALSE,
+              type="surface")%>%
+    layout(scene = list(xaxis = list(title = 'Weight'),
+                    yaxis = list(title = '1/4 mile time'),
+                    zaxis = list(title = 'mpg'))) 
+```
+(0 = automatic(light gray), 1 = manual(dark gray))
+
+If we visualized the data (Weight, mpg, qsec) and fitted a linear model for two groups, (red = automatic; blue = manual), the regression plane (light gray) for the manual transmission positioned higher that the the regression plane (dark gray) for the automatic transmission in terms of mpg. 
+
+- Is an automatic or manual transmission better for miles/(US) gallon (MPG) ?
+- Quantifying how different is the MPG between automatic and manual transmissions?
+
+Since the intercept represents the mean value for MPG, it implies that for the same input to the formula, a manual transmission is better for MPG on average. And it will be 2.9358 Miles/(US) gallon better.
+
+#### b. Model with interaction
+From the previous plot, we could see that the regression plane (light gray) for the manual transmission did not align well with the data (blue color). We might be able to adjust the model with an interaction term. It means to split the data into automatic and manual transmission and fit a linear model for each group. 
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Split into two groups and fit two models
+mtcars0 <- mtcars[mtcars$am==0,]
+mtcars1 <- mtcars[mtcars$a==1,]
+fit_am0 <- lm(mpg ~ wt + qsec, data = mtcars0)
+summary(fit_am0)
+fit_am1 <- lm(mpg ~ wt + qsec, data = mtcars1)
+summary(fit_am1)
+```
+Because of the presence of the interaction term (transmission), both the slopes and intercepts are different for automatic and manual. 
+
+Also note that the coefficients of intercepts, having p-values highter than 0.05,  are not statistically significant, meaning that the intercepts for automatic and manual are probably not very different. However, the slopes for automatic and manual are different.
+
+The regression equation above can be split into separate equations for two groups: 
+``` Automatic transmission: mpg = 11.2489 -2.9963(wt)  + 0.9454(qsec)```
+``` Manual transmission: mpg = 20.1754 -6.7544(wt)  + 1.1810(qsec) ```
+
+
+```{r echo = FALSE, message=FALSE, cache=TRUE, warning=FALSE}
+# Update our variables
+coe0 <- coefficients(fit_am0)
+coe1 <- coefficients(fit_am1)
+xx <- mtcars$wt
+yy <- mtcars$qsec
+color_palette <-  colorRampPalette(c("red","blue"))
+
+### Calculate z on a grid of x-y values for the regression plane
+xx.seq <- seq(min(xx),max(xx),length.out=25)
+yy.seq <- seq(min(yy),max(yy),length.out=25)
+# predict MPG for the automatic tranmission
+zz_auto <- t(outer(xx.seq, yy.seq, function(x,y) coe0[1]+coe0[2]*x+coe0[3]*y))
+# predict MPG for the manual  tranmission
+zz_manual <- t(outer(xx.seq, yy.seq, function(x,y) coe[1]+coe[2]*x+coe[3]*y))
+
+require("plotly")
+plot_ly() %>%
+    add_trace(df = ~mtcars, x =  mtcars$wt, y = mtcars$qsec, z = mtcars$mpg, 
+              type = "scatter3d", mode = "text+markers", 
+              color = factor(mtcars$am), colors = color_palette(2),
+              marker = list(size = 6)) %>%
+    add_trace(x=~xx.seq, y=~yy.seq, z=~zz_auto,
+              colorscale=list(c(0, "rgb(63, 63, 63"), list(1, "rgb(63, 63, 63)")),
+              showscale=FALSE,
+              type="surface")%>%
+    add_trace(x=~xx.seq, y=~yy.seq, z=~zz_manual,
+              colorscale=list(c(0, "rgb(133, 133, 133"), list(1, "rgb(133, 133, 133)")),showscale=FALSE,
+              type="surface")%>%
+    layout(scene = list(xaxis = list(title = 'Weight'),
+                        yaxis = list(title = '1/4 mile time'),
+                        zaxis = list(title = 'mpg'))) 
+```
+(0 = automatic(light gray), 1 = manual(dark gray))
+
+The regression planes are not parallel, but the interaction term is very small and statistically insignificant, so if we could visualize them they would be almost parallel.
+
+The model predicts that mpg increase with lower weight, but for the automatic transmission the slope of this increase is smaller. 
+The slopes intersect at between around 5000 and 2653 lbs. For transmission with less than 2653 lbs weight, the mpg of manual is higher compared to the mpg of automatic transmission with the same details.
+
+1/4 time mile has an additional positive effect on mpg. The slopes intersect at between around 14.5 and 22.9 lbs. Thus the maunal transmission with "1/4 mile time" greater than 14.5, will have higher mpg compared to automatic ones of the same details. 
+
+Nevertheless, the difference in slopes is due to the interaction term which is not statistically significant. So there is no evidence in the data that slopes should be different. No adjustment is needed.
+
+### 4 Models diagnostics
+We diagnosed our model with factor variables by the variance inflation factor(VIF). The VIF estimates how much the variance of a regression coefficient is inflated due to multicollinearity in the model. If VIF values were greater than 10, it indicated that terms were highly collinear with the other terms in the model.
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+library(car)
+vif(fit_combined)
+```
+The result of VIF was satisfactory. They were all under 10. 
+Besides, we also used diagnostic plots to provide checks for heteroscedasticity, normality, and influential observerations. You may find them in the Appendix D. The plots showed that there was no a very clear systematic pattern in our residuals. 
+
+As a result, we were confident with our first model with factor variables.
+
+
+### Summary
+With all the previous analysis, we can conclude that our regression model is a fit.
+
+``` Automatic transmission: mpg = 9.6178 -3.9165(wt)  + 1.2259(qsec)```
+``` Manual transmission: mpg = 9.6178 + 2.9358 * 1 -3.9165(wt)  + 1.2259(qsec)``` 
+
+The weights and 1/4 mile time are related to mpg, but the adjusted estimate (mpg) depends on group status. It estimates that the manual transmission has a higher mpg than the automatic transmission.
+
+
+
+### Appendix A: Data exploration
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+# Summary for the automatic transmission
+summary(mtcars[mtcars$am==0,])
+
+# Summary for the manual transmission
+summary(mtcars[mtcars$am==1,])
+```
+```{r echo = TRUE, message=FALSE, cache=TRUE, fig.height=10, fig.width = 10}
+
+require(GGally)
+# Multivariable Comparison
+g <- ggpairs(mtcars)
+g
+```
+
+
+### Appendix B: Model selection steps
+
+```{r echo = TRUE, message=FALSE, cache=TRUE}
+fit <- lm(mpg ~ . , data = mtcars)
+# Start the backward selection approach
+require(MASS)
+step <- stepAIC(fit, direction="backward")
+```
+
+### Appendix C: Models visualization
+**Model with factor variables**
+``` Automatic transmission: mpg = 9.6178 -3.9165(wt)  + 1.2259(qsec)```
+``` Manual transmission: mpg = 9.6178 + 2.9358 * 1 -3.9165(wt)  + 1.2259(qsec)```
+
+
+
+### Appendix D: Diagnostic plots
+
+```{r echo = FALSE, message=FALSE, cache=TRUE}
+# Diagnostic plots
+layout(matrix(c(1,2,3,4),2,2)) # optional 4 graphs/page
+plot(fit)
+```
