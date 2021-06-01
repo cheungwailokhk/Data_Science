@@ -1,0 +1,147 @@
+---
+title: "Quiz 2"
+author: "cwl"
+date: "6/1/2021"
+output: html_document
+---
+### 2. 
+Load the cement data using the commands:
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+library(AppliedPredictiveModeling)
+data(concrete)
+library(caret)
+set.seed(1000)
+inTrain = createDataPartition(mixtures$CompressiveStrength, p = 3/4)[[1]]
+training = mixtures[ inTrain,]
+testing = mixtures[-inTrain,]
+```
+Make a plot of the outcome (CompressiveStrength) versus the index of the samples. Color by each of the variables in the data set (you may find the cut2() function in the Hmisc package useful for turning continuous covariates into factors). What do you notice in these plots? 
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+library(Hmisc)
+cutCS <- cut2(training$FlyAsh, g = 5) # divided into 5 groups
+index <- seq_along(1:nrow(training))
+# CompressiveStrength (check the variable any relation to 
+ggplot(data=training,
+       aes(x=index,
+           y=CompressiveStrength,
+           color=cutCS)) + geom_point()  + geom_boxplot()
+
+
+cutCS <- cut2(training$Age, g = 5) # divided into 5 groups
+index <- seq_along(1:nrow(training))
+# CompressiveStrength (check the variable any relation to 
+ggplot(data=training,
+       aes(x=index,
+           y=CompressiveStrength,
+           color=cutCS)) + geom_point()  + geom_boxplot()
+```
+
+Answer: There is a non-random pattern in the plot of the outcome versus index that does not appear to be perfectly explained by any predictor suggesting a variable may be missing.
+
+
+
+### 3. 
+Load the cement data using the commands:
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+
+library(AppliedPredictiveModeling)
+data(concrete)
+library(caret)
+set.seed(1000)
+inTrain = createDataPartition(mixtures$CompressiveStrength, p = 3/4)[[1]]
+training = mixtures[ inTrain,]
+testing = mixtures[-inTrain,]
+
+```
+Make a histogram and confirm the SuperPlasticizer variable is skewed. Normally you might use the log transform to try to make the data more symmetric. Why would that be a poor choice for this variable?
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+hist(log10(training$Superplasticizer + 1), col="green", breaks = 100)
+```
+
+Answer: There are a large number of values that are the same and even if you took the log(SuperPlasticizer + 1) they would still all be identical so the distribution would not be symmetric.
+
+### 4. 
+Load the Alzheimer's disease data using the commands:
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+library(caret)
+library(AppliedPredictiveModeling)
+set.seed(3433)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+
+```
+Find all the predictor variables in the training set that begin with IL. Perform principal components on these variables with the preProcess() function from the caret package. Calculate the number of principal components needed to capture 90% of the variance. How many are there?
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+
+trainingIL <- training[,grep("^IL", names(training))]
+testingIL <- testing[,grep("^IL", names(testing))]
+
+preProc <- preProcess(trainingIL,method="pca",thresh=0.9)
+preProc
+
+```
+
+Answer:9
+
+
+### 5.
+Load the Alzheimer's disease data using the commands:
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+library(caret)
+library(AppliedPredictiveModeling)
+set.seed(3433)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+```
+Create a training data set consisting of only the predictors with variable names beginning with IL and the diagnosis. Build two predictive models, one using the predictors as they are and one using PCA with principal components explaining 80% of the variance in the predictors. Use method="glm" in the train function. 
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+
+
+# Filter dataset
+trainingIL <- training[,grep("^IL|^diagnosis", names(training))]
+testingIL <- testing[,grep("^IL|^diagnosis", names(testing))]
+
+# 1. Without PCA preprocessing
+modelFit <- train(diagnosis ~.,data=trainingIL, method="glm")
+modelFit # training model accuracy
+modelFit$finalModel #view training model coefficients
+# Apply model to testing data
+predictions <- predict(modelFit,newdata=testingIL)
+# Compare the prediction result with its testing labels
+confusionMatrix(data = predictions,testingIL$diagnosis) 
+
+
+# 2. Preprocessing training data by PCA
+# filter the predicting column, and find out PCA
+preProc <- preProcess(trainingIL[,!(colnames(trainingIL) %in% c("diagnosis"))]
+                      ,method="pca",thresh=0.8)
+# Apply PCA to the training data
+trainPC <- predict(preProc,trainingIL[,!(colnames(trainingIL) %in% c("diagnosis"))])
+# fit a model by glm
+modelFit_PCA<- train(x = trainPC, y = trainingIL$diagnosis,method="glm") 
+modelFit_PCA # training model with PCA accuracy
+
+# Preprocessing testing data by the same PCA model
+testPC <- predict(preProc,testingIL[,!(colnames(testingIL) %in% c("diagnosis"))])
+# Apply model to testing data
+predictions <- predict(modelFit_PCA,newdata=testPC)
+confusionMatrix(testing$diagnosis,predictions)
+
+
+# PCA
+modelFit_PCA <- train(diagnosis ~., data = trainingIL, 
+                      method = "glm", preProcess = "pca", 
+                      trControl=trainControl(preProcOptions=list(thresh=0.8)))
+
+confusionMatrix(testingIL$diagnosis, predict(modelFit_PCA, testingIL))
+
+```
