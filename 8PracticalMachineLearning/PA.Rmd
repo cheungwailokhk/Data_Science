@@ -1,0 +1,152 @@
+---
+writer: cwl
+output:
+  html_document:
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+classoption: landscape
+editor_options: 
+  chunk_output_type: console
+always_allow_html: true
+---
+
+## Peer-graded Assignment: Practical Machine Learning Course Project
+
+**Objective**
+The goal of this project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. We may use any of the other variables to predict with. We should create a report describing how you built your model, how we used cross validation, what we think the expected out of sample error is, and why we made the choices you did. We will also use our prediction model to predict 20 different test cases. 
+
+### 1. Data Processing
+#### 1a. Load the data, library and perform some basic exploratory data analyses. 
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+#setwd("/Users/l/Documents/Google_Drive/Workplace-JP/Workspace/R/datasciencecoursera/8PracticalMachineLearning")
+
+## Load libraries
+library(caret); library(dplyr)
+training_url <-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testing_url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+# Treat all NA, #DIV/0!, "" as missing value
+training = read.csv(training_url, na.strings=c("NA","#DIV/0!",""))
+validation = read.csv(testing_url, na.strings=c("NA","#DIV/0!",""))
+rm(training_url, testing_url)
+
+# check training data size
+dim(training)
+
+# Check any missing value in training dataset
+any(is.na(training))
+
+# Check the dimension after we removed observed rows if missing data exists
+dim(training[complete.cases(training),])
+
+review1 <- colSums(is.na(training))
+```
+We found that there was missing data in the training dataset. However, if we removed observed rows if any missing data exists, it would remove all observed data.
+
+So, we also reviewed if there existed any unnecessary variables (columns) in the dataset. 
+
+For the detailed summary, please refer to Appendix A.
+
+
+#### 1b. Cross Validation
+Now we splitted training data into 60% training and 40% test sets.
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+
+set.seed(1234)
+inTrain <- createDataPartition(y=training$classe,
+                              p=0.6, list=FALSE)
+training <- training[inTrain,] # split dataset
+testing <- training[-inTrain,]
+```
+
+#### 1c. Data cleaning
+We removed unnecessary variables and all columns which only had missing values from our testing dataset. 
+
+Besides, we also thought that some variables are unrelated. We also removed them from the dataset. 
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Prepcoressing function, which can be applied later
+preprocessing <- function(df) {
+    df %>% 
+    # Clean data: filter columns with missing data only
+    select_if(function(x) !any(is.na(x))) %>%
+    # Clean data: Remove unrelated variables (columns)
+    subset(select=-c(X, user_name, raw_timestamp_part_1, 
+                              raw_timestamp_part_2, cvtd_timestamp,
+                              cvtd_timestamp, new_window, num_window))
+}
+
+# Apply the prepcoressing to testing 
+training <- preprocessing(training)
+```
+We could see that there was no more missing values, and it did not affect the number of observed data. 
+
+The structure of the processed data are shown in the appendix B.
+
+
+### 2. Data exploration
+table(training$classe)
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# identify variables with no variability 
+nearZeroVar(training,saveMetrics=TRUE)
+```
+All data are with variability now, and therefore we are good to continue our model fit.
+
+
+### 3. Model fit
+We applied decision tree, and random forest algorithms to the data set for prediction.
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Decision Tree
+modFit_dt <- train(classe ~ .,data=training, method="rpart")
+library(rattle)
+fancyRpartPlot(modFit_dt$finalModel)
+
+# Random forest
+modFit_rf <- train(classe ~ .,data=training, method="rf")
+```
+
+
+### 4. Evaluation
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Apply the same prepcoressing to testing dataset
+testing <- preprocessing(testing)
+
+# Predict testing dataset by decision tree
+pred_dt <- predict(modFit_dt,testing)
+confusionMatrix(factor(testing$classe),pred_dt)
+
+# Predict testing dataset by random forest
+pred_rf <- predict(modFit_rf,testing)
+confusionMatrix(factor(testing$classe),pred_rf)
+
+```
+
+We can see that the random forest algorithm has the highest accuracy, and therefore we applied it to our validation dataset.
+
+### 5. Validation
+
+Finally we apply the model by random forest to the validation dataset for validation.
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Apply the same prepcoressing to validation dataset
+validation <- preprocessing(validation)
+# Apply model to validation dataset
+pred3 <- predict(modFit_rf,validation)
+pred3
+```
+
+### Appendix A: The number of missing data of each column in the training dataset 
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Review the number missing data in each column (viables)
+review1
+```
+
+
+### Appendix B: the training dataset structure after missing values are removed
+
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+str(training)
+```
+
+
