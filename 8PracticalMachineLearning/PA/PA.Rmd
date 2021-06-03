@@ -19,8 +19,6 @@ The goal of this project is to predict the manner in which they did the exercise
 ### 1. Data Processing
 #### 1a. Load the data, library and perform some basic exploratory data analyses. 
 ```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
-#setwd("/Users/l/Documents/Google_Drive/Workplace-JP/Workspace/R/datasciencecoursera/8PracticalMachineLearning")
-
 ## Load libraries
 library(caret); library(dplyr)
 training_url <-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"

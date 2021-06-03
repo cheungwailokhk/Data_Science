@@ -1,0 +1,76 @@
+---
+writer: cwl
+output:
+  html_document:
+    keep_md: yes
+  pdf_document:
+    latex_engine: xelatex
+classoption: landscape
+editor_options: 
+  chunk_output_type: console
+always_allow_html: true
+---
+
+## Peer-graded Assignment 1: R Markdown and Leaflet
+```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+# Specify compilation date and time
+format(Sys.time(), "%a %b %d %X %Y")
+```
+
+**Objective**
+Create a web page using R Markdown that features a map created with Leaflet. 
+
+
+
+We obtained a dataset about all Hospitals in Australia from [SpringerNature](https://springernature.figshare.com/articles/dataset/Hospital_IDs_names_and_coordinates_csv_/8319737/1), and aimed at display them on an interactive map, which was created by library(Leaflet).
+
+
+This dataset consisted of names of hospitals in Australia, their geographic coordinates (Longitude and Latitude).
+
+### 1. Load the data, library and perform some basic exploratory data analyses. 
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+library(dplyr); library(leaflet)
+# Load data 
+url <-"https://springernature.figshare.com/ndownloader/files/15591434"
+hospital_df = read.csv(url, na.strings=c("NA","#DIV/0!",""))
+
+# Inspect data
+str(hospital_df)
+
+# Select only necessary variables
+hospital_df <- hospital_df %>%
+    select(Latitude, Longitude, Hospital.name, Phone.number, Street.address, Postcode) %>%
+    rename(lat=Latitude, lng=Longitude)
+
+```
+
+### 2. Create Hospital Map
+```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height=9, fig.width = 9}
+# Import hospital icon
+hospitalIcon <- makeIcon(
+  iconUrl = "./hospital.png",
+  iconWidth = 31*215/230, iconHeight = 31,
+  iconAnchorX = 31*215/230/2, iconAnchorY = 16
+)
+
+
+# Function to create contents for popup
+content <- function(name, phone, adr, code) {
+    paste(sep = "<br/>",
+          "<b>", name,"</b>",
+          phone,
+          adr, code)
+}
+
+
+# Create the Map
+set.seed(Sys.Date())
+hospital_df %>% 
+    leaflet() %>%
+    addTiles() %>%
+    addMarkers(popup=content(hospital_df$Hospital.name,
+                             hospital_df$Phone.number,
+                             hospital_df$Street.address,
+                             hospital_df$Postcode),
+               clusterOptions = markerClusterOptions())
+```
