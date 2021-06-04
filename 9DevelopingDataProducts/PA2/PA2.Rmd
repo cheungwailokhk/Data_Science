@@ -1,0 +1,64 @@
+---
+title: "R Markdown Presentation & Plotly"
+author: "cwl"
+date: "6/4/2021"
+output: ioslides_presentation
+---
+
+
+## Objective
+
+The rubric contains the following two questions:
+
+1. Does the web page feature a date and is this date less than two months before the date that you're grading this assignment?
+
+2. Is the web page a presentation and does it feature an interactive plot that appears to have been created with Plotly?
+
+
+## 1. Load the mtcars data
+We use mtcars data for this presentation. This is the data structure:
+
+1.	MPG	Miles/(US) gallon
+2.	cyl	Number of cylinders
+3.	disp	Displacement (cu.in.)
+4.	hp	Gross horsepower
+5.	drat	Rear axle ratio
+6.	wt	Weight (1000 lbs)
+7.	qsec	1/4 mile time
+8.	vs	Engine (0 = V-shaped, 1 = straight)
+9.	am	Transmission (0 = automatic, 1 = manual)
+10.	gear	Number of forward gears
+11.	carb	Number of carburetors
+
+
+## 1. Load the mtcars data (cont.)
+
+```{r echo = TRUE, comment = "", message=FALSE, cache=TRUE}
+# Load library
+require("plotly")
+# Load data
+data(mtcars)
+# Specify compilation date and time
+format(Sys.time(), "%a %b %d %X %Y")
+```
+---
+
+```{r echo = TRUE, comment = "", message=FALSE, cache=TRUE, warning=FALSE, }
+# data summary
+summary(mtcars)
+```
+
+## 2. Plot 3D scatterplot
+```{r echo = FALSE, comment = "", message=FALSE, warning=FALSE, cache=TRUE, fig.height=5, fig.width = 5}
+color_palette <-  colorRampPalette(c("red","blue"))
+
+plot_ly() %>%
+    add_trace(df = ~mtcars, x =  mtcars$wt, y = mtcars$qsec, z = mtcars$mpg, 
+              type = "scatter3d", mode = "text+markers", 
+              color = factor(mtcars$am), colors = color_palette(2),
+              marker = list(size = 6)) %>%
+    layout(scene = list(xaxis = list(title = 'Weight'),
+                    yaxis = list(title = '1/4 mile time'),
+                    zaxis = list(title = 'mpg'))) 
+```
+
