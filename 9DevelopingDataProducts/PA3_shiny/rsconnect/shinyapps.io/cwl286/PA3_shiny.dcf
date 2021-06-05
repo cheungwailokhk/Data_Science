@@ -1,0 +1,12 @@
+name: PA3_shiny
+title: PA3_shiny
+username:
+account: cwl286
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4231596
+bundleId: 4680770
+url: https://cwl286.shinyapps.io/PA3_shiny/
+when: 1622891913.11635
+asMultiple: FALSE
+asStatic: FALSE
