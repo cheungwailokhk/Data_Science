@@ -3,9 +3,10 @@ title: "Tasks in Developing Data Products"
 author: "cwl"
 date: "6/5/2021"
 output:
-  ioslides_presentation: default
+  slidy_presentation: default
   pdf_document:
     latex_engine: xelatex
+  ioslides_presentation: default
 ---
 
 

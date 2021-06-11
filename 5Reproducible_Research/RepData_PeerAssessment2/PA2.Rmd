@@ -136,7 +136,7 @@ ggplot(health_df, aes(x = reorder(EVENT, -NUMBERS),
                y  = NUMBERS,
                fill = factor(RESULT),
                color = factor(RESULT))) +
-  geom_bar(stat = "identity")+
+    geom_bar(stat = "identity")+
     labs(x = "Events",
          y = "Number of casualties") + 
     ggtitle("The most harmful event types to population health") +
