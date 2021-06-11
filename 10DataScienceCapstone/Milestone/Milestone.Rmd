@@ -29,6 +29,8 @@ always_allow_html: true
     c. [Clustering](#clustering)
 5. [Findings](#findings)
 6. [Future plans](#plans)
+7. [Appendix A. Top 100 frequent words in N-gram](#appendixA)
+8. [Appendix B. Full Code in R](#appendixB)
 
 
 
@@ -134,7 +136,7 @@ lines_blog <- sample(lines_blog, summ$Lines_counts[2]*percent, replace=FALSE)
 lines_news <- sample(lines_news, summ$Lines_counts[3]*percent, replace=FALSE)
 ```
 
-The new summary for samples will be:
+The new summary for samples was:
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 line_counts <- c(length(lines_tw), length(lines_blog), length(lines_news))
 word_counts <- c(sum(nchar(lines_tw)), sum(nchar(lines_blog)),sum(nchar(lines_blog)))
@@ -200,11 +202,11 @@ After data cleaning, we performed a N-gram preprocessing step to identify approp
 
 N-gram refered to segmenting an input stream into all combinations of adjacent words of length n in our corpus.
 
-- Unitgram: a single letter, syllable, or word.
+- Unigram: a single letter, syllable, or word.
 - Bigram: a pair of consecutive written units such as letters, syllables, or words.
 - Trigram: a group of three consecutive written units such as letters, syllables, or words.
 
-Then, we can create a term document matrix to get the frequency of our words.
+Then, we created a term document matrix to get the frequency of our words.
 
 ```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE}
 # 2. N-gram
@@ -260,10 +262,8 @@ sample(freq3$word, 10)
 ## 4. Exploratory analysis <a name="exploratory"></a>
 We built figures and tables to understand variation in the frequencies of words and word pairs in our data.
 
-
-
 ### 4a. Word frequencies <a name="frequencies"></a>
-To understand variation in the frequencies of words and word pairs in the data, we created plots and tables. 
+This part shows the top 20 frequent terms of our N-gram pre-processing. 
 
 In appendix A, you may find the top 100 frequent words in N-gram.
 
@@ -305,7 +305,7 @@ wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.35)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 ```
@@ -352,7 +352,7 @@ Finally, processing data was quite time-consuming, especially when converted to 
     
 ## 6. Future plans <a name="plans"></a>
 
-As explained in our background information, our ultimate goal was to develop a text prediction application based on our prediction algorithm. We will deploy this application on a Shiny server to make our Shiny application available over the web. 
+As explained in our background information, our ultimate goal is to develop a text prediction application based on our prediction algorithm. We will deploy this application on a Shiny server to make our Shiny application available over the web. 
 
 To achieve this objective, we have to train an accurate prediction algorithm. The data analysis in the report provided us with an insight that words frequency and the combination might be a possible way for text prediction. However, this method required us to process an enormous amount of data.
 
@@ -361,7 +361,7 @@ Therefore, we may also consider Hidden Markov Models (HMM) for text prediction. 
 For our application, we want to provide an interactive text prediction feature. Providing a list of texts as a prediction result would be a possible way. Users can inspect the probability of each text prediction, and pick the one they like.
 
 
-## Appendix A. Top 100 frequent words in N-gram
+## Appendix A. Top 100 frequent words in N-gram  <a name="appendixA"></a>
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 # Inspect Top 100 frequent words in Unigram
 freq1$word[1:100]
@@ -371,7 +371,7 @@ freq2$word[1:100]
 freq3$word[1:100]
 ```
 
-## Appendix B. Full Code in R
+## Appendix B. Full Code in R <a name="appendixB"></a>
 ```{r echo = TRUE, eval=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 # Load libraries
 require(tm); require(SnowballC); require(stopwords); 
@@ -500,7 +500,7 @@ wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.35)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 

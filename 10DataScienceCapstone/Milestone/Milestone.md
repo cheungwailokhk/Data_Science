@@ -29,6 +29,8 @@ always_allow_html: true
     c. [Clustering](#clustering)
 5. [Findings](#findings)
 6. [Future plans](#plans)
+7. [Appendix A. Top 100 frequent words in N-gram](#appendixA)
+8. [Appendix B. Full Code in R](#appendixB)
 
 
 
@@ -100,13 +102,13 @@ This dataset was fairly large. Our objective was to visualize and understand the
 
 
 
-The new summary for samples will be:
+The new summary for samples was:
 
 ```
 ##               Lines_counts Word_counts File_size
-## en_US.twitter        23601     1619566    3.2 Mb
-## en_US.blogs           8992     2105986    2.6 Mb
-## en_US.news           10102     2105986    2.6 Mb
+## en_US.twitter        23601     1620306    3.2 Mb
+## en_US.blogs           8992     2044519    2.5 Mb
+## en_US.news           10102     2044519    2.6 Mb
 ```
 
 ### 3b. Data cleaning <a name="cleaning"></a>
@@ -128,11 +130,11 @@ As we can obeserve from the samples, there were some unnecessary information suc
 #### Examples of our corpus after processing:
 
 ```
-## [[1]] gilani departur leav signific void within zardari inner circl yearold prime minist view parti colleagu deft troubleshoot abl hammer compromis zardari difficult rival
-## [[2]] citi commiss spoke citi manag norton bonapart said readi resign well move forward
-## [[3]] fine yesterday girardi said whatev reason symptom came today
-## [[4]] think anybodi troubl unc guard dexter strickland said s great player s work behind time
-## [[5]] q goos island wellknown outfit get foot door
+## [[1]] bring recent group messag titl run long haul link articl current run time long may run strategi ensur run longev pete magil
+## [[2]] speak stori just everi piec section submit educ school administr outset project sent letter area public privat high school ask share us good deed done student journal thank school took time effort respond youll see everi school particip someth proud mani school lot proud
+## [[3]] charli dead glitterati light fire knock
+## [[4]] go interest see farah experi pay salazar oregon project
+## [[5]] ask soon mean commiss next meet schuler said yes
 ```
 
 ### 3c. N-gram <a name="ngram"></a>
@@ -140,11 +142,11 @@ After data cleaning, we performed a N-gram preprocessing step to identify approp
 
 N-gram refered to segmenting an input stream into all combinations of adjacent words of length n in our corpus.
 
-- Unitgram: a single letter, syllable, or word.
+- Unigram: a single letter, syllable, or word.
 - Bigram: a pair of consecutive written units such as letters, syllables, or words.
 - Trigram: a group of three consecutive written units such as letters, syllables, or words.
 
-Then, we can create a term document matrix to get the frequency of our words.
+Then, we created a term document matrix to get the frequency of our words.
 
 
 ```r
@@ -181,34 +183,32 @@ freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
 #### Examples of Unigram after processing:
 
 ```
-##  [1] "squar"     "earn"      "onion"     "dozen"     "christina" "conclud"  
-##  [7] "digit"     "furnitur"  "counsel"   "explan"
+##  [1] "nine"     "locat"    "tshirt"   "wonder"   "dillon"   "dunn"    
+##  [7] "negat"    "kentucki" "heritag"  "nomine"
 ```
 
 #### Examples of Bigram after processing:
 
 ```
-##  [1] "get lot"        "one way"        "food drug"      "weve got"      
-##  [5] "away home"      "attorney offic" "charg two"      "grand prix"    
-##  [9] "art project"    "long time"
+##  [1] "madison counti" "said need"      "left tackl"     "depart educ"   
+##  [5] "day first"      "five day"       "event held"     "now said"      
+##  [9] "coupl year"     "friday night"
 ```
 #### Examples of Triigram after processing:
 
 ```
-##  [1] "white hous said"               "republican congression candid"
-##  [3] "sherlock holm game"            "reduc energi consumpt"        
-##  [5] "hes look forward"              "past two season"              
-##  [7] "hudson librari histor"         "pitch normal doesnt"          
-##  [9] "come million use"              "pass wednesday around"
+##  [1] "servic commission jennif" "three day week"          
+##  [3] "secretari jay carney"     "kill bin laden"          
+##  [5] "quarterback andrew luck"  "last year million"       
+##  [7] "risk heart diseas"        "drove two run"           
+##  [9] "public record request"    "cycl team behind"
 ```
 
 ## 4. Exploratory analysis <a name="exploratory"></a>
 We built figures and tables to understand variation in the frequencies of words and word pairs in our data.
 
-
-
 ### 4a. Word frequencies <a name="frequencies"></a>
-To understand variation in the frequencies of words and word pairs in the data, we created plots and tables. 
+This part shows the top 20 frequent terms of our N-gram pre-processing. 
 
 In appendix A, you may find the top 100 frequent words in N-gram.
 
@@ -235,7 +235,7 @@ Finally, processing data was quite time-consuming, especially when converted to 
     
 ## 6. Future plans <a name="plans"></a>
 
-As explained in our background information, our ultimate goal was to develop a text prediction application based on our prediction algorithm. We will deploy this application on a Shiny server to make our Shiny application available over the web. 
+As explained in our background information, our ultimate goal is to develop a text prediction application based on our prediction algorithm. We will deploy this application on a Shiny server to make our Shiny application available over the web. 
 
 To achieve this objective, we have to train an accurate prediction algorithm. The data analysis in the report provided us with an insight that words frequency and the combination might be a possible way for text prediction. However, this method required us to process an enormous amount of data.
 
@@ -244,119 +244,117 @@ Therefore, we may also consider Hidden Markov Models (HMM) for text prediction. 
 For our application, we want to provide an interactive text prediction feature. Providing a list of texts as a prediction result would be a possible way. Users can inspect the probability of each text prediction, and pick the one they like.
 
 
-## Appendix A. Top 100 frequent words in N-gram
+## Appendix A. Top 100 frequent words in N-gram  <a name="appendixA"></a>
 
 ```
-##   [1] "said"     "will"     "year"     "one"      "new"      "state"   
-##   [7] "time"     "two"      "say"      "get"      "like"     "can"     
-##  [13] "also"     "first"    "work"     "last"     "peopl"    "make"    
-##  [19] "game"     "school"   "citi"     "just"     "play"     "day"     
-##  [25] "team"     "now"      "includ"   "take"     "three"    "use"     
-##  [31] "want"     "back"     "call"     "come"     "counti"   "even"    
-##  [37] "percent"  "good"     "home"     "season"   "million"  "way"     
-##  [43] "start"    "offic"    "week"     "need"     "compani"  "run"     
-##  [49] "may"      "mani"     "show"     "well"     "think"    "month"   
-##  [55] "polic"    "help"     "look"     "point"    "dont"     "made"    
-##  [61] "know"     "report"   "right"    "still"    "plan"     "job"     
-##  [67] "see"      "open"     "much"     "thing"    "public"   "hous"    
-##  [73] "second"   "nation"   "center"   "high"     "famili"   "live"    
-##  [79] "end"      "sinc"     "tri"      "anoth"    "next"     "big"     
-##  [85] "that"     "four"     "night"    "group"    "win"      "part"    
-##  [91] "presid"   "realli"   "move"     "got"      "offici"   "busi"    
-##  [97] "player"   "district" "place"    "give"
+##   [1] "said"    "year"    "one"     "new"     "time"    "state"   "say"    
+##   [8] "like"    "can"     "get"     "also"    "two"     "make"    "just"   
+##  [15] "game"    "peopl"   "first"   "last"    "school"  "work"    "citi"   
+##  [22] "play"    "use"     "day"     "includ"  "counti"  "million" "team"   
+##  [29] "take"    "come"    "three"   "want"    "back"    "percent" "call"   
+##  [36] "now"     "even"    "home"    "need"    "way"     "point"   "help"   
+##  [43] "season"  "polic"   "report"  "week"    "run"     "start"   "think"  
+##  [50] "dont"    "plan"    "compani" "good"    "offic"   "made"    "still"  
+##  [57] "show"    "know"    "look"    "mani"    "much"    "well"    "may"    
+##  [64] "see"     "month"   "right"   "famili"  "thing"   "nation"  "public" 
+##  [71] "job"     "center"  "open"    "end"     "high"    "hous"    "tri"    
+##  [78] "part"    "coach"   "servic"  "former"  "place"   "sinc"    "that"   
+##  [85] "park"    "player"  "presid"  "second"  "offici"  "littl"   "program"
+##  [92] "anoth"   "next"    "didnt"   "four"    "big"     "man"     "ask"    
+##  [99] "group"   "win"
 ```
 
 ```
 ##   [1] "last year"         "new york"          "high school"      
-##   [4] "st loui"           "new jersey"        "last week"        
-##   [7] "year ago"          "los angel"         "first time"       
-##  [10] "last month"        "two year"          "right now"        
-##  [13] "san francisco"     "unit state"        "make sure"        
-##  [16] "next year"         "ohio state"        "three year"       
-##  [19] "dont know"         "polic said"        "school district"  
-##  [22] "feel like"         "health care"       "look like"        
-##  [25] "polic offic"       "vice presid"       "barack obama"     
-##  [28] "last season"       "offici said"       "citi council"     
-##  [31] "even though"       "attorney general"  "everi day"        
-##  [34] "can get"           "four year"         "law enforc"       
-##  [37] "mani peopl"        "next week"         "state univers"    
-##  [40] "dont want"         "presid barack"     "real estat"       
-##  [43] "suprem court"      "associ press"      "chief execut"     
-##  [46] "execut director"   "kansa citi"        "said statement"   
-##  [49] "san diego"         "five year"         "public school"    
-##  [52] "wall street"       "white hous"        "year said"        
-##  [55] "dont think"        "just one"          "last two"         
-##  [58] "polic depart"      "two week"          "elementari school"
-##  [61] "head coach"        "littl bit"         "news confer"      
-##  [64] "one thing"         "past year"         "want see"         
-##  [67] "will get"          "york citi"         "come back"        
-##  [70] "medic center"      "said want"         "super bowl"       
-##  [73] "tuesday night"     "will take"         "plain dealer"     
-##  [76] "plead guilti"      "run back"          "will also"        
-##  [79] "will go"           "will make"         "year old"         
-##  [82] "bay area"          "council member"    "cuyahoga counti"  
-##  [85] "obama administr"   "st charl"          "state law"        
-##  [88] "three month"       "two decad"         "two game"         
-##  [91] "will help"         "year later"        "can help"         
-##  [94] "court judg"        "fourth quarter"    "im go"            
-##  [97] "jersey citi"       "long time"         "mitt romney"      
-## [100] "month ago"
+##   [4] "year ago"          "last week"         "st loui"          
+##   [7] "new jersey"        "los angel"         "san francisco"    
+##  [10] "unit state"        "health care"       "next year"        
+##  [13] "two year"          "make sure"         "school district"  
+##  [16] "first time"        "even though"       "last season"      
+##  [19] "dont know"         "five year"         "three year"       
+##  [22] "last month"        "offici said"       "look like"        
+##  [25] "littl bit"         "polic said"        "right now"        
+##  [28] "plead guilti"      "vice presid"       "chief execut"     
+##  [31] "dont want"         "four year"         "medic center"     
+##  [34] "polic depart"      "take place"        "associ press"     
+##  [37] "dont think"        "super bowl"        "everi day"        
+##  [40] "execut director"   "feel like"         "ohio state"       
+##  [43] "polic offic"       "white hous"        "general manag"    
+##  [46] "past year"         "year old"          "also said"        
+##  [49] "barack obama"      "head coach"        "law enforc"       
+##  [52] "look forward"      "said s"            "state univers"    
+##  [55] "can make"          "home run"          "one thing"        
+##  [58] "report said"       "san diego"         "two week"         
+##  [61] "washington dc"     "citi council"      "feder govern"     
+##  [64] "free agent"        "real estat"        "can use"          
+##  [67] "elementari school" "first round"       "jersey citi"      
+##  [70] "last two"          "million dollar"    "offic said"       
+##  [73] "presid barack"     "run back"          "said just"        
+##  [76] "said statement"    "want make"         "year later"       
+##  [79] "bin laden"         "can get"           "cuyahoga counti"  
+##  [82] "didnt know"        "get back"          "mani peopl"       
+##  [85] "million million"   "million year"      "next week"        
+##  [88] "said im"           "suprem court"      "tuesday night"    
+##  [91] "us district"       "wide receiv"       "attorney general" 
+##  [94] "come back"         "counti prosecutor" "famili member"    
+##  [97] "find way"          "friday night"      "kansa citi"       
+## [100] "obama administr"
 ```
 
 ```
-##   [1] "presid barack obama"     "new york citi"          
-##   [3] "two year ago"            "g carbohydr g"          
-##   [5] "g protein g"             "protein g carbohydr"    
-##   [7] "fat g satur"             "g fat g"                
-##   [9] "world war ii"            "st loui counti"         
-##  [11] "execut vice presid"      "gov chris christi"      
-##  [13] "calori g protein"        "carbohydr g fat"        
-##  [15] "cent per share"          "cholesterol mg sodium"  
-##  [17] "first time sinc"         "four year ago"          
-##  [19] "high school student"     "per serv calori"        
-##  [21] "us district court"       "us district judg"       
-##  [23] "albright kick fc"        "attorney general offic" 
-##  [25] "five year ago"           "g satur mg"             
-##  [27] "golden gate bridg"       "mg cholesterol mg"      
-##  [29] "past three year"         "satur mg cholesterol"   
-##  [31] "st charl counti"         "told associ press"      
-##  [33] "two decad ago"           "us suprem court"        
-##  [35] "wall street journal"     "chief financi offic"    
-##  [37] "circuit court appeal"    "dow jone industri"      
-##  [39] "fiber mg sodium"         "food drug administr"    
-##  [41] "health human servic"     "last year state"        
-##  [43] "mg sodium g"             "new york time"          
-##  [45] "next four year"          "presid chief execut"    
-##  [47] "rock roll hall"          "roll hall fame"         
-##  [49] "senior vice presid"      "serv calori g"          
-##  [51] "sodium g fiber"          "state attorney general" 
-##  [53] "will take place"         "can get hurt"           
-##  [55] "chief execut offic"      "citi council member"    
-##  [57] "confer call analyst"     "counti medic examin"    
-##  [59] "court record show"       "drink plenti water"     
-##  [61] "fanni mae freddi"        "fat mg cholesterol"     
-##  [63] "first three game"        "first three month"      
-##  [65] "first time season"       "first two game"         
-##  [67] "g fiber mg"              "game win streak"        
-##  [69] "high school footbal"     "high school graduat"    
-##  [71] "hous speaker john"       "issu statement say"     
-##  [73] "jone industri averag"    "kick fc cambier"        
-##  [75] "last two season"         "last year accord"       
-##  [77] "law enforc offici"       "los angel counti"       
-##  [79] "mae freddi mac"          "mari tyler moor"        
-##  [81] "mg cholesterol g"        "mile per hour"          
-##  [83] "new york ap"             "osama bin laden"        
-##  [85] "point eight rebound"     "polit scienc professor" 
-##  [87] "respond request comment" "run albright kick"      
-##  [89] "said last week"          "said statement releas"  
-##  [91] "short time later"        "speaker john boehner"   
-##  [93] "sport util vehicl"       "st clair counti"        
-##  [95] "standard poor index"     "superior court judg"    
-##  [97] "th us circuit"           "three year ago"         
-##  [99] "two week ago"            "us circuit court"
+##   [1] "presid barack obama"        "new york citi"             
+##   [3] "st loui counti"             "first time sinc"           
+##   [5] "five year ago"              "gov chris christi"         
+##   [7] "three year ago"             "us district court"         
+##   [9] "us district judg"           "want make sure"            
+##  [11] "counti prosecutor offic"    "told associ press"         
+##  [13] "accord court document"      "last two year"             
+##  [15] "million last year"          "past two year"             
+##  [17] "percent percent percent"    "point per game"            
+##  [19] "rock n roll"                "runner score posit"        
+##  [21] "senior vice presid"         "two week ago"              
+##  [23] "world war ii"               "cent per share"            
+##  [25] "citi st loui"               "commerci real estat"       
+##  [27] "hundr million dollar"       "major leagu basebal"       
+##  [29] "osama bin laden"            "said dont know"            
+##  [31] "st petersburg fla"          "time last year"            
+##  [33] "unifi school district"      "us suprem court"           
+##  [35] "chief execut offic"         "counti state attorney"     
+##  [37] "court record show"          "credit card accept"        
+##  [39] "depart public health"       "game last season"          
+##  [41] "go long way"                "gov ted strickland"        
+##  [43] "h er bb"                    "hard work dedic"           
+##  [45] "health care reform"         "hour minut second"         
+##  [47] "ip h er"                    "john f kennedi"            
+##  [49] "last year includ"           "los angel counti"          
+##  [51] "los angel time"             "million cent per"          
+##  [53] "nation weather servic"      "new england patriot"       
+##  [55] "new york daili"             "new york time"             
+##  [57] "past five year"             "percent last year"         
+##  [59] "pm friday saturday"         "presid chief execut"       
+##  [61] "real estat compani"         "rep ron paul"              
+##  [63] "right now said"             "said im go"                
+##  [65] "san francisco er"           "six year ago"              
+##  [67] "st loui area"               "york daili news"           
+##  [69] "accord court record"        "afford care act"           
+##  [71] "age percent percent"        "allow two run"             
+##  [73] "also rais concern"          "arrest last week"          
+##  [75] "attorney general offic"     "attorney offic declin"     
+##  [77] "attorney offic said"        "averag entre averag"       
+##  [79] "averag point rebound"       "can make play"             
+##  [81] "can use time"               "case medic center"         
+##  [83] "center dwight howard"       "chicago white sox"         
+##  [85] "chief financi offic"        "child left behind"         
+##  [87] "cinco de mayo"              "coach nate mcmillan"       
+##  [89] "consum price index"         "counti circuit court"      
+##  [91] "counti grand juri"          "counti histor societi"     
+##  [93] "counti sheriff depart"      "counti sheriff offic"      
+##  [95] "counti superior court"      "ct squar feet"             
+##  [97] "cuyahoga counti prosecutor" "cycl team behind"          
+##  [99] "d like know"                "daili news report"
 ```
 
-## Appendix B. Full Code in R
+## Appendix B. Full Code in R <a name="appendixB"></a>
 
 ```r
 # Load libraries
@@ -486,7 +484,7 @@ wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.35)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 
