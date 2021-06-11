@@ -167,11 +167,9 @@ As we can obeserve from the samples, there were some unnecessary information suc
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 # 1. Text cleaning:
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
-
+rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
 removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
-
-myCorpus <- VCorpus(VectorSource(c(lines_news)))
 
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
 myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
@@ -183,7 +181,7 @@ myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
-rm(lines_tw, lines_blog, lines_news, removeURL, removeSpecial)
+rm(removeURL, removeSpecial)
 
 print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 ``` 
@@ -214,10 +212,15 @@ tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x))
 tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
 tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
 
+
 # N-gram
+# removeSparseTerms: remove sparse words to contain around 1000 frequent words
 tdm1 <- TermDocumentMatrix(myCorpus)
+tdm1 <- removeSparseTerms(tdm1, 0.9975) 
 tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
+tdm2 <- removeSparseTerms(tdm2, 0.9997) 
 tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
+tdm3 <- removeSparseTerms(tdm3, 0.99994) 
 rm(myCorpus)
 
 # Unigram
@@ -297,15 +300,15 @@ ggplot(head(freq3,20), aes(x=reorder(word, freq), y=freq)) +
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 # Word clouds for Unigram
-wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark")
+wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark", size = 0.4)
 saveWidget(wc1, "./images/wc1.html", selfcontained = F)
 webshot("./images/wc1.html", "wc1.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Bigram
-wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
+wc2 <- wordcloud2(data = head(freq2, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 ```
@@ -313,8 +316,10 @@ webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 ### 4c. Clustering <a name="clustering"></a>
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+
 # Clustering for Unigram
-tdm4 <- removeSparseTerms(tdm1, 0.96)
+# removeSparseTerms: to reduce the size of frequent words to around 20
+tdm4 <- removeSparseTerms(tdm1, 0.965)
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -322,7 +327,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Unigram",
      xlab = "term", ylab = "")
 
 # Clustering for Bigram
-tdm4 <- removeSparseTerms(tdm2, 0.997) 
+tdm4 <- removeSparseTerms(tdm2, 0.9977) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -330,7 +335,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Bigram",
      xlab = "terms", ylab = "")
 
 # Clustering for Trigram
-tdm4 <- removeSparseTerms(tdm3, 0.9994) 
+tdm4 <- removeSparseTerms(tdm3, 0.99976) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -418,11 +423,9 @@ lines_news <- sample(lines_news, summ$Lines_counts[3]*percent, replace=FALSE)
 
 # 1. Text cleaning:
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
-
+rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
 removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
-
-myCorpus <- VCorpus(VectorSource(c(lines_news)))
 
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
 myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
@@ -434,7 +437,7 @@ myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
-rm(lines_tw, lines_blog, lines_news, removeURL, removeSpecial)
+rm(removeURL, removeSpecial)
 
 print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 
@@ -444,9 +447,13 @@ tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)),
 tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
 
 # N-gram
+# removeSparseTerms: remove sparse words to contain around 1000 frequent words
 tdm1 <- TermDocumentMatrix(myCorpus)
+tdm1 <- removeSparseTerms(tdm1, 0.9975) 
 tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
+tdm2 <- removeSparseTerms(tdm2, 0.9997) 
 tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
+tdm3 <- removeSparseTerms(tdm3, 0.99994) 
 rm(myCorpus)
 
 # Unigram
@@ -492,20 +499,21 @@ ggplot(head(freq3,20), aes(x=reorder(word, freq), y=freq)) +
   coord_flip()
 
 # Word clouds for Unigram
-wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark")
+wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark", size = 0.4)
 saveWidget(wc1, "./images/wc1.html", selfcontained = F)
 webshot("./images/wc1.html", "wc1.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Bigram
-wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
+wc2 <- wordcloud2(data = head(freq2, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 
 # Clustering for Unigram
-tdm4 <- removeSparseTerms(tdm1, 0.96)
+# removeSparseTerms: to reduce the size of frequent words to around 20
+tdm4 <- removeSparseTerms(tdm1, 0.965)
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -513,7 +521,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Unigram",
      xlab = "term", ylab = "")
 
 # Clustering for Bigram
-tdm4 <- removeSparseTerms(tdm2, 0.997) 
+tdm4 <- removeSparseTerms(tdm2, 0.9977) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -521,7 +529,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Bigram",
      xlab = "terms", ylab = "")
 
 # Clustering for Trigram
-tdm4 <- removeSparseTerms(tdm3, 0.9994) 
+tdm4 <- removeSparseTerms(tdm3, 0.99976) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()

@@ -124,17 +124,17 @@ As we can obeserve from the samples, there were some unnecessary information suc
 
 
 ```
-## [1] "Corpus size after cleaning: " "41.6 Mb"
+## [1] "Corpus size after cleaning: " "174.2 Mb"
 ```
 
 #### Examples of our corpus after processing:
 
 ```
-## [[1]] bring recent group messag titl run long haul link articl current run time long may run strategi ensur run longev pete magil
-## [[2]] speak stori just everi piec section submit educ school administr outset project sent letter area public privat high school ask share us good deed done student journal thank school took time effort respond youll see everi school particip someth proud mani school lot proud
-## [[3]] charli dead glitterati light fire knock
-## [[4]] go interest see farah experi pay salazar oregon project
-## [[5]] ask soon mean commiss next meet schuler said yes
+## [[1]] u get rid beard ya
+## [[2]] hope well ladi keep post go d text find phone
+## [[3]] guy danni jame pear lp
+## [[4]] excit wonder christma
+## [[5]] money want usa visa areno question ask got prove
 ```
 
 ### 3c. N-gram <a name="ngram"></a>
@@ -155,10 +155,15 @@ tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x))
 tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
 tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
 
+
 # N-gram
+# removeSparseTerms: remove sparse words to contain around 1000 frequent words
 tdm1 <- TermDocumentMatrix(myCorpus)
+tdm1 <- removeSparseTerms(tdm1, 0.9975) 
 tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
+tdm2 <- removeSparseTerms(tdm2, 0.9997) 
 tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
+tdm3 <- removeSparseTerms(tdm3, 0.99994) 
 rm(myCorpus)
 
 # Unigram
@@ -183,25 +188,24 @@ freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
 #### Examples of Unigram after processing:
 
 ```
-##  [1] "nine"     "locat"    "tshirt"   "wonder"   "dillon"   "dunn"    
-##  [7] "negat"    "kentucki" "heritag"  "nomine"
+##  [1] "mother"    "cri"       "potenti"   "ask"       "bar"       "peac"     
+##  [7] "cleveland" "card"      "simpl"     "read"
 ```
 
 #### Examples of Bigram after processing:
 
 ```
-##  [1] "madison counti" "said need"      "left tackl"     "depart educ"   
-##  [5] "day first"      "five day"       "event held"     "now said"      
-##  [9] "coupl year"     "friday night"
+##  [1] "take pictur"     "still go"        "just two"        "need get"       
+##  [5] "cuyahoga counti" "gotta love"      "like just"       "new way"        
+##  [9] "thank love"      "get peopl"
 ```
 #### Examples of Triigram after processing:
 
 ```
-##  [1] "servic commission jennif" "three day week"          
-##  [3] "secretari jay carney"     "kill bin laden"          
-##  [5] "quarterback andrew luck"  "last year million"       
-##  [7] "risk heart diseas"        "drove two run"           
-##  [9] "public record request"    "cycl team behind"
+##  [1] "said im go"             "want peopl know"        "thank follow back"     
+##  [4] "llc andor amazon"       "make great day"         "content provid subject"
+##  [7] "runner score posit"     "tri someth new"         "presid bill clinton"   
+## [10] "last week great"
 ```
 
 ## 4. Exploratory analysis <a name="exploratory"></a>
@@ -247,111 +251,100 @@ For our application, we want to provide an interactive text prediction feature. 
 ## Appendix A. Top 100 frequent words in N-gram  <a name="appendixA"></a>
 
 ```
-##   [1] "said"    "year"    "one"     "new"     "time"    "state"   "say"    
-##   [8] "like"    "can"     "get"     "also"    "two"     "make"    "just"   
-##  [15] "game"    "peopl"   "first"   "last"    "school"  "work"    "citi"   
-##  [22] "play"    "use"     "day"     "includ"  "counti"  "million" "team"   
-##  [29] "take"    "come"    "three"   "want"    "back"    "percent" "call"   
-##  [36] "now"     "even"    "home"    "need"    "way"     "point"   "help"   
-##  [43] "season"  "polic"   "report"  "week"    "run"     "start"   "think"  
-##  [50] "dont"    "plan"    "compani" "good"    "offic"   "made"    "still"  
-##  [57] "show"    "know"    "look"    "mani"    "much"    "well"    "may"    
-##  [64] "see"     "month"   "right"   "famili"  "thing"   "nation"  "public" 
-##  [71] "job"     "center"  "open"    "end"     "high"    "hous"    "tri"    
-##  [78] "part"    "coach"   "servic"  "former"  "place"   "sinc"    "that"   
-##  [85] "park"    "player"  "presid"  "second"  "offici"  "littl"   "program"
-##  [92] "anoth"   "next"    "didnt"   "four"    "big"     "man"     "ask"    
-##  [99] "group"   "win"
+##   [1] "said"   "just"   "one"    "get"    "like"   "time"   "can"    "day"   
+##   [9] "year"   "make"   "new"    "love"   "good"   "know"   "work"   "dont"  
+##  [17] "now"    "peopl"  "say"    "think"  "see"    "want"   "thank"  "look"  
+##  [25] "come"   "need"   "back"   "use"    "also"   "first"  "great"  "thing" 
+##  [33] "well"   "way"    "last"   "take"   "even"   "much"   "today"  "two"   
+##  [41] "right"  "start"  "follow" "realli" "week"   "got"    "still"  "game"  
+##  [49] "play"   "feel"   "call"   "show"   "help"   "state"  "school" "tri"   
+##  [57] "life"   "mani"   "cant"   "live"   "home"   "let"    "hope"   "littl" 
+##  [65] "made"   "night"  "best"   "may"    "never"  "friend" "next"   "book"  
+##  [73] "that"   "someth" "happi"  "give"   "find"   "didnt"  "lol"    "lot"   
+##  [81] "keep"   "alway"  "man"    "run"    "long"   "citi"   "watch"  "place" 
+##  [89] "better" "anoth"  "put"    "everi"  "end"    "team"   "around" "point" 
+##  [97] "includ" "read"   "big"    "talk"
 ```
 
 ```
-##   [1] "last year"         "new york"          "high school"      
-##   [4] "year ago"          "last week"         "st loui"          
-##   [7] "new jersey"        "los angel"         "san francisco"    
-##  [10] "unit state"        "health care"       "next year"        
-##  [13] "two year"          "make sure"         "school district"  
-##  [16] "first time"        "even though"       "last season"      
-##  [19] "dont know"         "five year"         "three year"       
-##  [22] "last month"        "offici said"       "look like"        
-##  [25] "littl bit"         "polic said"        "right now"        
-##  [28] "plead guilti"      "vice presid"       "chief execut"     
-##  [31] "dont want"         "four year"         "medic center"     
-##  [34] "polic depart"      "take place"        "associ press"     
-##  [37] "dont think"        "super bowl"        "everi day"        
-##  [40] "execut director"   "feel like"         "ohio state"       
-##  [43] "polic offic"       "white hous"        "general manag"    
-##  [46] "past year"         "year old"          "also said"        
-##  [49] "barack obama"      "head coach"        "law enforc"       
-##  [52] "look forward"      "said s"            "state univers"    
-##  [55] "can make"          "home run"          "one thing"        
-##  [58] "report said"       "san diego"         "two week"         
-##  [61] "washington dc"     "citi council"      "feder govern"     
-##  [64] "free agent"        "real estat"        "can use"          
-##  [67] "elementari school" "first round"       "jersey citi"      
-##  [70] "last two"          "million dollar"    "offic said"       
-##  [73] "presid barack"     "run back"          "said just"        
-##  [76] "said statement"    "want make"         "year later"       
-##  [79] "bin laden"         "can get"           "cuyahoga counti"  
-##  [82] "didnt know"        "get back"          "mani peopl"       
-##  [85] "million million"   "million year"      "next week"        
-##  [88] "said im"           "suprem court"      "tuesday night"    
-##  [91] "us district"       "wide receiv"       "attorney general" 
-##  [94] "come back"         "counti prosecutor" "famili member"    
-##  [97] "find way"          "friday night"      "kansa citi"       
-## [100] "obama administr"
+##   [1] "last year"       "right now"       "dont know"       "look like"      
+##   [5] "new york"        "look forward"    "cant wait"       "feel like"      
+##   [9] "last night"      "year ago"        "last week"       "thank follow"   
+##  [13] "high school"     "im go"           "make sure"       "first time"     
+##  [17] "let know"        "can get"         "dont want"       "dont think"     
+##  [21] "even though"     "good morn"       "let go"          "come back"      
+##  [25] "happi birthday"  "year old"        "unit state"      "everi day"      
+##  [29] "just want"       "next year"       "new jersey"      "los angel"      
+##  [33] "st loui"         "good luck"       "next week"       "just got"       
+##  [37] "sound like"      "one day"         "go back"         "didnt know"     
+##  [41] "new year"        "thank much"      "can see"         "im sure"        
+##  [45] "littl bit"       "long time"       "follow back"     "san francisco"  
+##  [49] "dont get"        "get back"        "mother day"      "get readi"      
+##  [53] "mani peopl"      "can make"        "im just"         "seem like"      
+##  [57] "dont like"       "two year"        "im gonna"        "one thing"      
+##  [61] "go get"          "just like"       "make feel"       "tri get"        
+##  [65] "social media"    "dont forget"     "health care"     "one best"       
+##  [69] "five year"       "pretti much"     "three year"      "best friend"    
+##  [73] "im still"        "good thing"      "great day"       "san diego"      
+##  [77] "join us"         "know im"         "wait see"        "want go"        
+##  [81] "last month"      "much better"     "now im"          "thank rt"       
+##  [85] "want see"        "didnt want"      "everi time"      "look good"      
+##  [89] "go home"         "just get"        "let us"          "make sens"      
+##  [93] "school district" "someon els"      "tell us"         "cant believ"    
+##  [97] "get better"      "just dont"       "just one"        "dont even"
 ```
 
 ```
-##   [1] "presid barack obama"        "new york citi"             
-##   [3] "st loui counti"             "first time sinc"           
-##   [5] "five year ago"              "gov chris christi"         
-##   [7] "three year ago"             "us district court"         
-##   [9] "us district judg"           "want make sure"            
-##  [11] "counti prosecutor offic"    "told associ press"         
-##  [13] "accord court document"      "last two year"             
-##  [15] "million last year"          "past two year"             
-##  [17] "percent percent percent"    "point per game"            
-##  [19] "rock n roll"                "runner score posit"        
-##  [21] "senior vice presid"         "two week ago"              
-##  [23] "world war ii"               "cent per share"            
-##  [25] "citi st loui"               "commerci real estat"       
-##  [27] "hundr million dollar"       "major leagu basebal"       
-##  [29] "osama bin laden"            "said dont know"            
-##  [31] "st petersburg fla"          "time last year"            
-##  [33] "unifi school district"      "us suprem court"           
-##  [35] "chief execut offic"         "counti state attorney"     
-##  [37] "court record show"          "credit card accept"        
-##  [39] "depart public health"       "game last season"          
-##  [41] "go long way"                "gov ted strickland"        
-##  [43] "h er bb"                    "hard work dedic"           
-##  [45] "health care reform"         "hour minut second"         
-##  [47] "ip h er"                    "john f kennedi"            
-##  [49] "last year includ"           "los angel counti"          
-##  [51] "los angel time"             "million cent per"          
-##  [53] "nation weather servic"      "new england patriot"       
-##  [55] "new york daili"             "new york time"             
-##  [57] "past five year"             "percent last year"         
-##  [59] "pm friday saturday"         "presid chief execut"       
-##  [61] "real estat compani"         "rep ron paul"              
-##  [63] "right now said"             "said im go"                
-##  [65] "san francisco er"           "six year ago"              
-##  [67] "st loui area"               "york daili news"           
-##  [69] "accord court record"        "afford care act"           
-##  [71] "age percent percent"        "allow two run"             
-##  [73] "also rais concern"          "arrest last week"          
-##  [75] "attorney general offic"     "attorney offic declin"     
-##  [77] "attorney offic said"        "averag entre averag"       
-##  [79] "averag point rebound"       "can make play"             
-##  [81] "can use time"               "case medic center"         
-##  [83] "center dwight howard"       "chicago white sox"         
-##  [85] "chief financi offic"        "child left behind"         
-##  [87] "cinco de mayo"              "coach nate mcmillan"       
-##  [89] "consum price index"         "counti circuit court"      
-##  [91] "counti grand juri"          "counti histor societi"     
-##  [93] "counti sheriff depart"      "counti sheriff offic"      
-##  [95] "counti superior court"      "ct squar feet"             
-##  [97] "cuyahoga counti prosecutor" "cycl team behind"          
-##  [99] "d like know"                "daili news report"
+##   [1] "happi mother day"        "cant wait see"          
+##   [3] "happi new year"          "let us know"            
+##   [5] "new york citi"           "look forward see"       
+##   [7] "im pretti sure"          "presid barack obama"    
+##   [9] "new york time"           "cant wait get"          
+##  [11] "dream come true"         "feel like im"           
+##  [13] "first time sinc"         "want make sure"         
+##  [15] "cinco de mayo"           "five year ago"          
+##  [17] "im look forward"         "make feel like"         
+##  [19] "st loui counti"          "thank everyon came"     
+##  [21] "world war ii"            "make feel better"       
+##  [23] "new year eve"            "rock n roll"            
+##  [25] "dont even know"          "dont know im"           
+##  [27] "incorpor item c"         "item c pp"              
+##  [29] "long time ago"           "thank follow us"        
+##  [31] "three year ago"          "two week ago"           
+##  [33] "us district court"       "wall street journal"    
+##  [35] "cant wait till"          "follow look forward"    
+##  [37] "go go go"                "gov chris christi"      
+##  [39] "just want say"           "let just say"           
+##  [41] "look forward read"       "past two year"          
+##  [43] "spend much time"         "st patrick day"         
+##  [45] "us district judg"        "cant wait go"           
+##  [47] "come see us"             "commerci real estat"    
+##  [49] "counti prosecutor offic" "dont feel like"         
+##  [51] "dont think can"          "everi singl day"        
+##  [53] "get work done"           "hope see soon"          
+##  [55] "ive ever seen"           "just want make"         
+##  [57] "last two year"           "make sure get"          
+##  [59] "million last year"       "new york ny"            
+##  [61] "now im go"               "sever year ago"         
+##  [63] "thank much follow"       "thank rt hope"          
+##  [65] "time last year"          "told associ press"      
+##  [67] "accord court document"   "amazon servic llc"      
+##  [69] "cant wait til"           "chicago chicago illinoi"
+##  [71] "come join us"            "coupl week ago"         
+##  [73] "didnt know anyth"        "dont want go"           
+##  [75] "everi day get"           "feel much better"       
+##  [77] "follow follow follow"    "follow us twitter"      
+##  [79] "get job done"            "go back bed"            
+##  [81] "go long way"             "green bay packer"       
+##  [83] "happi valentin day"      "ill never forget"       
+##  [85] "ive never seen"          "just around corner"     
+##  [87] "look forward meet"       "look forward work"      
+##  [89] "major leagu basebal"     "martin luther king"     
+##  [91] "much better now"         "new england patriot"    
+##  [93] "past five year"          "peopl dont know"        
+##  [95] "point per game"          "right around corner"    
+##  [97] "right now im"            "runner score posit"     
+##  [99] "senior vice presid"      "spend lot time"
 ```
 
 ## Appendix B. Full Code in R <a name="appendixB"></a>
@@ -402,11 +395,9 @@ lines_news <- sample(lines_news, summ$Lines_counts[3]*percent, replace=FALSE)
 
 # 1. Text cleaning:
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
-
+rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
 removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
-
-myCorpus <- VCorpus(VectorSource(c(lines_news)))
 
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
 myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
@@ -418,7 +409,7 @@ myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
-rm(lines_tw, lines_blog, lines_news, removeURL, removeSpecial)
+rm(removeURL, removeSpecial)
 
 print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 
@@ -428,9 +419,13 @@ tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)),
 tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
 
 # N-gram
+# removeSparseTerms: remove sparse words to contain around 1000 frequent words
 tdm1 <- TermDocumentMatrix(myCorpus)
+tdm1 <- removeSparseTerms(tdm1, 0.9975) 
 tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
+tdm2 <- removeSparseTerms(tdm2, 0.9997) 
 tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
+tdm3 <- removeSparseTerms(tdm3, 0.99994) 
 rm(myCorpus)
 
 # Unigram
@@ -476,20 +471,21 @@ ggplot(head(freq3,20), aes(x=reorder(word, freq), y=freq)) +
   coord_flip()
 
 # Word clouds for Unigram
-wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark")
+wc1 <- wordcloud2(data = head(freq1, 200), color =  "random-dark", size = 0.4)
 saveWidget(wc1, "./images/wc1.html", selfcontained = F)
 webshot("./images/wc1.html", "wc1.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Bigram
-wc2 <- wordcloud2(data = head(freq2, 150), color =  "random-dark", size=0.5)
+wc2 <- wordcloud2(data = head(freq2, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc2, "./images/wc2.html", selfcontained = F)
 webshot("./images/wc2.html", "wc2.png", delay = 2, vwidth = 650, vheight = 470)
 # Word clouds for Trigram
-wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.32)
+wc3 <- wordcloud2(data = head(freq3, 100), color =  "random-dark", size = 0.3)
 saveWidget(wc3, "./images/wc3.html", selfcontained = F)
 webshot("./images/wc3.html", "wc3.png", delay = 2, vwidth = 650, vheight = 470)
 
 # Clustering for Unigram
-tdm4 <- removeSparseTerms(tdm1, 0.96)
+# removeSparseTerms: to reduce the size of frequent words to around 20
+tdm4 <- removeSparseTerms(tdm1, 0.965)
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -497,7 +493,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Unigram",
      xlab = "term", ylab = "")
 
 # Clustering for Bigram
-tdm4 <- removeSparseTerms(tdm2, 0.997) 
+tdm4 <- removeSparseTerms(tdm2, 0.9977) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
@@ -505,7 +501,7 @@ plot(fit, hang=-1, main ="Hierarchical clustering for Bigram",
      xlab = "terms", ylab = "")
 
 # Clustering for Trigram
-tdm4 <- removeSparseTerms(tdm3, 0.9994) 
+tdm4 <- removeSparseTerms(tdm3, 0.99976) 
 d <- dist(scale(tdm4), method="euclidian")   
 fit <- hclust(d=d, method="complete") 
 plot.new()
