@@ -190,20 +190,25 @@ As we can obeserve from the samples, there were some unnecessary information suc
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
 rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
-removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
+removeSpecial <- function(x) {gsub("[^a-zA-Z ]+", "", x)} # except space
+removeEmpty <- function(x){!is.na(content(x)) & trimws(content(x)) != ""}
 
+# Preprocessing
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
+myCorpus <- tm_map(myCorpus, content_transformer(removeURL))
 myCorpus <- tm_map(myCorpus, removePunctuation)
 myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
+
 myCorpus <- tm_map(myCorpus, removeWords, stopwords("english"))
-myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial)) 
+
+# Remove documents with empty content to reduce size
+myCorpus <- tm_filter(myCorpus, removeEmpty)
 
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
 rm(removeURL, removeSpecial)
-
 print(paste0('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 ``` 
 
@@ -229,38 +234,49 @@ Then, we created a term document matrix to get the frequency of our words.
 
 ```{r echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE}
 # 2. N-gram
-tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 1, n_min = 1))}
-tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
-tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
+# create N-gram tern document matrix from a corpus
+createNgram <- function(myCorpus, ngram = 1, lowfreq = NA) {
+    toToken <- function(x) {
+        # x contains x[1]$content and x[2]$meta
+        unlist(tokenize_ngrams(content(x), n = ngram, n_min = ngram))
+    }
+    
+    # TDM automatically discards words less than three characters. 
+    tdm <- TermDocumentMatrix(myCorpus, control = list(tokenize = toToken,
+                                                       wordLengths=c(1, Inf)))
 
+    if (!is.na(lowfreq)) {
+        # remove infrequent words to reduce size
+        freqTerms <- findFreqTerms(tdm, lowfreq = lowfreq)
+        tdm <- tdm[freqTerms, ]
+    }
+    tdm
+}
+
+convertTdmToDf <- function(tdm) {
+    # Reduce documents dimension and convert to dataframe
+    # df <- data.frame(rowSums(as.matrix(tdm))) # exhaust memory
+    df <- slam::row_sums(tdm, na.rm = T)
+    df <- data.frame(word = names(df), freq = as.integer(df))  %>%
+        arrange(desc(freq))
+    rm(tdm)
+    print(paste0("Ngram size: ", format(object.size(df), units = "Mb")))
+    df
+}
 
 # N-gram
 # removeSparseTerms: remove sparse words to contain around 1000 frequent words
-tdm1 <- TermDocumentMatrix(myCorpus)
-tdm1 <- removeSparseTerms(tdm1, 0.9975) 
-tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
-tdm2 <- removeSparseTerms(tdm2, 0.9997) 
-tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
-tdm3 <- removeSparseTerms(tdm3, 0.99994) 
-rm(myCorpus)
 
 # Unigram
-freq1 <- rowSums(as.matrix(tdm1)) # Create frequency for each token
-freq1 <- subset(freq1, freq1 >= 5)
-freq1 <- data.frame(word = names(freq1), freq = as.integer(freq1)) %>%
-        arrange(desc(freq))
-
+tdm1 <- createNgram(myCorpus, n = 1, lowfreq = 1)
+freq1 <- convertTdmToDf(tdm1) # Create a frequency sorted dataframe for tokens
 # Bigram
-freq2 <- rowSums(as.matrix(tdm2)) # Create frequency for each token
-freq2 <- subset(freq2, freq2 >= 5)
-freq2 <- data.frame(word = names(freq2), freq = as.integer(freq2)) %>%
-    arrange(desc(freq)) 
-
-# Trigram
-freq3 <- rowSums(as.matrix(tdm3)) # Create frequency for each token
-freq3 <- subset(freq3, freq3 >= 2)
-freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
-    arrange(desc(freq))
+tdm2 <- createNgram(myCorpus, n = 2, lowfreq = 1)
+freq2 <- convertTdmToDf(tdm2) # Create a frequency sorted dataframe for tokens
+# Trigram 
+tdm3 <- createNgram(myCorpus, n = 3, lowfreq = 1)
+freq3 <- convertTdmToDf(tdm3) # Create a frequency sorted dataframe for tokens
+rm(myCorpus)
 ``` 
 
 #### Examples of Unigram after processing:
@@ -446,54 +462,71 @@ lines_news <- sample(lines_news, summ$Lines_counts[3]*percent, replace=FALSE)
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
 rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
-removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
+removeSpecial <- function(x) {gsub("[^a-zA-Z ]+", "", x)} # except space
+removeEmpty <- function(x){!is.na(content(x)) & trimws(content(x)) != ""}
 
+# Preprocessing
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
+myCorpus <- tm_map(myCorpus, content_transformer(removeURL))
 myCorpus <- tm_map(myCorpus, removePunctuation)
 myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
+
 myCorpus <- tm_map(myCorpus, removeWords, stopwords("english"))
-myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial)) 
+
+# Remove documents with empty content to reduce size
+myCorpus <- tm_filter(myCorpus, removeEmpty)
 
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
 rm(removeURL, removeSpecial)
-
 print(paste0('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 
 # 2. N-gram
-tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 1, n_min = 1))}
-tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
-tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
+# create N-gram tern document matrix from a corpus
+createNgram <- function(myCorpus, ngram = 1, lowfreq = NA) {
+    toToken <- function(x) {
+        # x contains x[1]$content and x[2]$meta
+        unlist(tokenize_ngrams(content(x), n = ngram, n_min = ngram))
+    }
+    
+    # TDM automatically discards words less than three characters. 
+    tdm <- TermDocumentMatrix(myCorpus, control = list(tokenize = toToken,
+                                                       wordLengths=c(1, Inf)))
+
+    if (!is.na(lowfreq)) {
+        # remove infrequent words to reduce size
+        freqTerms <- findFreqTerms(tdm, lowfreq = lowfreq)
+        tdm <- tdm[freqTerms, ]
+    }
+    tdm
+}
+
+convertTdmToDf <- function(tdm) {
+    # Reduce documents dimension and convert to dataframe
+    # df <- data.frame(rowSums(as.matrix(tdm))) # exhaust memory
+    df <- slam::row_sums(tdm, na.rm = T)
+    df <- data.frame(word = names(df), freq = as.integer(df))  %>%
+        arrange(desc(freq))
+    rm(tdm)
+    print(paste0("Ngram size: ", format(object.size(df), units = "Mb")))
+    df
+}
 
 # N-gram
 # removeSparseTerms: remove sparse words to contain around 1000 frequent words
-tdm1 <- TermDocumentMatrix(myCorpus)
-tdm1 <- removeSparseTerms(tdm1, 0.9975) 
-tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
-tdm2 <- removeSparseTerms(tdm2, 0.9997) 
-tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
-tdm3 <- removeSparseTerms(tdm3, 0.99994) 
-rm(myCorpus)
 
 # Unigram
-freq1 <- rowSums(as.matrix(tdm1)) # Create frequency for each token
-freq1 <- subset(freq1, freq1 >= 5)
-freq1 <- data.frame(word = names(freq1), freq = as.integer(freq1)) %>%
-        arrange(desc(freq))
-
+tdm1 <- createNgram(myCorpus, n = 1, lowfreq = 1)
+freq1 <- convertTdmToDf(tdm1) # Create a frequency sorted dataframe for tokens
 # Bigram
-freq2 <- rowSums(as.matrix(tdm2)) # Create frequency for each token
-freq2 <- subset(freq2, freq2 >= 5)
-freq2 <- data.frame(word = names(freq2), freq = as.integer(freq2)) %>%
-    arrange(desc(freq)) 
-
-# Trigram
-freq3 <- rowSums(as.matrix(tdm3)) # Create frequency for each token
-freq3 <- subset(freq3, freq3 >= 2)
-freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
-    arrange(desc(freq))
+tdm2 <- createNgram(myCorpus, n = 2, lowfreq = 1)
+freq2 <- convertTdmToDf(tdm2) # Create a frequency sorted dataframe for tokens
+# Trigram 
+tdm3 <- createNgram(myCorpus, n = 3, lowfreq = 1)
+freq3 <- convertTdmToDf(tdm3) # Create a frequency sorted dataframe for tokens
+rm(myCorpus)
 
 # Plot Unigram
 ggplot(head(freq1,20), aes(x=reorder(word, freq), y=freq)) +

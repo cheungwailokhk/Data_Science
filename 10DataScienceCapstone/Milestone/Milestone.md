@@ -124,7 +124,7 @@ As we can obeserve from the samples, there were some unnecessary information suc
 
 
 ```
-## [1] "Corpus size after cleaning: " "174.2 Mb"
+## [1] "Corpus size after cleaning: 173.9 Mb"
 ```
 
 #### Examples of our corpus after processing:
@@ -151,61 +151,93 @@ Then, we created a term document matrix to get the frequency of our words.
 
 ```r
 # 2. N-gram
-tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 1, n_min = 1))}
-tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
-tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
+# create N-gram tern document matrix from a corpus
+createNgram <- function(myCorpus, ngram = 1, lowfreq = NA) {
+    toToken <- function(x) {
+        # x contains x[1]$content and x[2]$meta
+        unlist(tokenize_ngrams(content(x), n = ngram, n_min = ngram))
+    }
+    
+    # TDM automatically discards words less than three characters. 
+    tdm <- TermDocumentMatrix(myCorpus, control = list(tokenize = toToken,
+                                                       wordLengths=c(1, Inf)))
 
+    if (!is.na(lowfreq)) {
+        # remove infrequent words to reduce size
+        freqTerms <- findFreqTerms(tdm, lowfreq = lowfreq)
+        tdm <- tdm[freqTerms, ]
+    }
+    tdm
+}
+
+convertTdmToDf <- function(tdm) {
+    # Reduce documents dimension and convert to dataframe
+    # df <- data.frame(rowSums(as.matrix(tdm))) # exhaust memory
+    df <- slam::row_sums(tdm, na.rm = T)
+    df <- data.frame(word = names(df), freq = as.integer(df))  %>%
+        arrange(desc(freq))
+    rm(tdm)
+    print(paste0("Ngram size: ", format(object.size(df), units = "Mb")))
+    df
+}
 
 # N-gram
 # removeSparseTerms: remove sparse words to contain around 1000 frequent words
-tdm1 <- TermDocumentMatrix(myCorpus)
-tdm1 <- removeSparseTerms(tdm1, 0.9975) 
-tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
-tdm2 <- removeSparseTerms(tdm2, 0.9997) 
-tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
-tdm3 <- removeSparseTerms(tdm3, 0.99994) 
-rm(myCorpus)
 
 # Unigram
-freq1 <- rowSums(as.matrix(tdm1)) # Create frequency for each token
-freq1 <- subset(freq1, freq1 >= 5)
-freq1 <- data.frame(word = names(freq1), freq = as.integer(freq1)) %>%
-        arrange(desc(freq))
+tdm1 <- createNgram(myCorpus, n = 1, lowfreq = 1)
+freq1 <- convertTdmToDf(tdm1) # Create a frequency sorted dataframe for tokens
+```
 
+```
+## [1] "Ngram size: 2.8 Mb"
+```
+
+```r
 # Bigram
-freq2 <- rowSums(as.matrix(tdm2)) # Create frequency for each token
-freq2 <- subset(freq2, freq2 >= 5)
-freq2 <- data.frame(word = names(freq2), freq = as.integer(freq2)) %>%
-    arrange(desc(freq)) 
+tdm2 <- createNgram(myCorpus, n = 2, lowfreq = 1)
+freq2 <- convertTdmToDf(tdm2) # Create a frequency sorted dataframe for tokens
+```
 
-# Trigram
-freq3 <- rowSums(as.matrix(tdm3)) # Create frequency for each token
-freq3 <- subset(freq3, freq3 >= 2)
-freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
-    arrange(desc(freq))
+```
+## [1] "Ngram size: 29.7 Mb"
+```
+
+```r
+# Trigram 
+tdm3 <- createNgram(myCorpus, n = 3, lowfreq = 1)
+freq3 <- convertTdmToDf(tdm3) # Create a frequency sorted dataframe for tokens
+```
+
+```
+## [1] "Ngram size: 38.8 Mb"
+```
+
+```r
+rm(myCorpus)
 ```
 
 #### Examples of Unigram after processing:
 
 ```
-##  [1] "mother"    "cri"       "potenti"   "ask"       "bar"       "peac"     
-##  [7] "cleveland" "card"      "simpl"     "read"
+##  [1] "woodyarddr"   "worsehi"      "hooti"        "pkfz"         "sayit"       
+##  [6] "sprung"       "hoegaarden"   "basiloregano" "reput"        "obes"
 ```
 
 #### Examples of Bigram after processing:
 
 ```
-##  [1] "take pictur"     "still go"        "just two"        "need get"       
-##  [5] "cuyahoga counti" "gotta love"      "like just"       "new way"        
-##  [9] "thank love"      "get peopl"
+##  [1] "mason team"    "comescu salin" "rememb beauti" "quit enamour" 
+##  [5] "depp ask"      "vengeanc moon" "still kurt"    "start lose"   
+##  [9] "stress manag"  "movi tub"
 ```
 #### Examples of Triigram after processing:
 
 ```
-##  [1] "said im go"             "want peopl know"        "thank follow back"     
-##  [4] "llc andor amazon"       "make great day"         "content provid subject"
-##  [7] "runner score posit"     "tri someth new"         "presid bill clinton"   
-## [10] "last week great"
+##  [1] "look hott alway"       "disloc shoulder head"  "physic talent great"  
+##  [4] "thick larg tasti"      "part middl class"      "ever sure your"       
+##  [7] "squar feet ultim"      "royalti author due"    "robert garrigus found"
+## [10] "s glamour design"
 ```
 
 ## 4. Exploratory analysis <a name="exploratory"></a>
@@ -251,43 +283,43 @@ For our application, we want to provide an interactive text prediction feature. 
 ## Appendix A. Top 100 frequent words in N-gram  <a name="appendixA"></a>
 
 ```
-##   [1] "said"   "just"   "one"    "get"    "like"   "time"   "can"    "day"   
-##   [9] "year"   "make"   "new"    "love"   "good"   "know"   "work"   "dont"  
-##  [17] "now"    "peopl"  "say"    "think"  "see"    "want"   "thank"  "look"  
-##  [25] "come"   "need"   "back"   "use"    "also"   "first"  "great"  "thing" 
-##  [33] "well"   "way"    "last"   "take"   "even"   "much"   "today"  "two"   
-##  [41] "right"  "start"  "follow" "realli" "week"   "got"    "still"  "game"  
-##  [49] "play"   "feel"   "call"   "show"   "help"   "state"  "school" "tri"   
-##  [57] "life"   "mani"   "cant"   "live"   "home"   "let"    "hope"   "littl" 
-##  [65] "made"   "night"  "best"   "may"    "never"  "friend" "next"   "book"  
-##  [73] "that"   "someth" "happi"  "give"   "find"   "didnt"  "lol"    "lot"   
-##  [81] "keep"   "alway"  "man"    "run"    "long"   "citi"   "watch"  "place" 
-##  [89] "better" "anoth"  "put"    "everi"  "end"    "team"   "around" "point" 
-##  [97] "includ" "read"   "big"    "talk"
+##   [1] "said"   "just"   "one"    "get"    "like"   "go"     "time"   "im"    
+##   [9] "can"    "day"    "year"   "make"   "new"    "love"   "good"   "know"  
+##  [17] "work"   "dont"   "now"    "peopl"  "say"    "think"  "see"    "want"  
+##  [25] "thank"  "look"   "come"   "need"   "us"     "back"   "use"    "also"  
+##  [33] "first"  "well"   "great"  "thing"  "way"    "last"   "take"   "even"  
+##  [41] "much"   "today"  "two"    "right"  "start"  "follow" "realli" "week"  
+##  [49] "got"    "still"  "game"   "play"   "feel"   "call"   "show"   "help"  
+##  [57] "state"  "school" "tri"    "that"   "rt"     "life"   "mani"   "cant"  
+##  [65] "live"   "home"   "let"    "hope"   "littl"  "made"   "night"  "best"  
+##  [73] "may"    "never"  "friend" "next"   "book"   "u"      "happi"  "someth"
+##  [81] "give"   "find"   "didnt"  "lol"    "lot"    "keep"   "alway"  "man"   
+##  [89] "ive"    "run"    "long"   "citi"   "watch"  "place"  "better" "anoth" 
+##  [97] "put"    "your"   "everi"  "end"
 ```
 
 ```
 ##   [1] "last year"       "right now"       "dont know"       "look like"      
 ##   [5] "new york"        "look forward"    "cant wait"       "feel like"      
-##   [9] "last night"      "year ago"        "last week"       "thank follow"   
-##  [13] "high school"     "im go"           "make sure"       "first time"     
-##  [17] "let know"        "can get"         "dont want"       "dont think"     
-##  [21] "even though"     "good morn"       "let go"          "come back"      
-##  [25] "happi birthday"  "year old"        "unit state"      "everi day"      
-##  [29] "just want"       "next year"       "new jersey"      "los angel"      
-##  [33] "st loui"         "good luck"       "next week"       "just got"       
-##  [37] "sound like"      "one day"         "go back"         "didnt know"     
-##  [41] "new year"        "thank much"      "can see"         "im sure"        
+##   [9] "im go"           "last night"      "year ago"        "last week"      
+##  [13] "thank follow"    "high school"     "make sure"       "first time"     
+##  [17] "let know"        "can get"         "dont want"       "im sure"        
+##  [21] "dont think"      "even though"     "good morn"       "let go"         
+##  [25] "come back"       "happi birthday"  "year old"        "unit state"     
+##  [29] "everi day"       "next year"       "just want"       "new jersey"     
+##  [33] "los angel"       "st loui"         "good luck"       "next week"      
+##  [37] "just got"        "sound like"      "one day"         "go back"        
+##  [41] "didnt know"      "new year"        "thank much"      "can see"        
 ##  [45] "littl bit"       "long time"       "follow back"     "san francisco"  
 ##  [49] "dont get"        "get back"        "mother day"      "get readi"      
-##  [53] "mani peopl"      "can make"        "im just"         "seem like"      
-##  [57] "dont like"       "two year"        "im gonna"        "one thing"      
-##  [61] "go get"          "just like"       "make feel"       "tri get"        
-##  [65] "social media"    "dont forget"     "health care"     "one best"       
-##  [69] "five year"       "pretti much"     "three year"      "best friend"    
-##  [73] "im still"        "good thing"      "great day"       "san diego"      
-##  [77] "join us"         "know im"         "wait see"        "want go"        
-##  [81] "last month"      "much better"     "now im"          "thank rt"       
+##  [53] "im just"         "mani peopl"      "can make"        "im gonna"       
+##  [57] "seem like"       "dont like"       "two year"        "now im"         
+##  [61] "one thing"       "go get"          "im still"        "just like"      
+##  [65] "know im"         "make feel"       "tri get"         "social media"   
+##  [69] "dont forget"     "health care"     "one best"        "five year"      
+##  [73] "pretti much"     "three year"      "best friend"     "good thing"     
+##  [77] "great day"       "join us"         "san diego"       "wait see"       
+##  [81] "want go"         "last month"      "much better"     "thank rt"       
 ##  [85] "want see"        "didnt want"      "everi time"      "look good"      
 ##  [89] "go home"         "just get"        "let us"          "make sens"      
 ##  [93] "school district" "someon els"      "tell us"         "cant believ"    
@@ -299,52 +331,52 @@ For our application, we want to provide an interactive text prediction feature. 
 ##   [3] "happi new year"          "let us know"            
 ##   [5] "new york citi"           "look forward see"       
 ##   [7] "im pretti sure"          "presid barack obama"    
-##   [9] "new york time"           "cant wait get"          
-##  [11] "dream come true"         "feel like im"           
-##  [13] "first time sinc"         "want make sure"         
-##  [15] "cinco de mayo"           "five year ago"          
-##  [17] "im look forward"         "make feel like"         
-##  [19] "st loui counti"          "thank everyon came"     
-##  [21] "world war ii"            "make feel better"       
-##  [23] "new year eve"            "rock n roll"            
-##  [25] "dont even know"          "dont know im"           
-##  [27] "incorpor item c"         "item c pp"              
-##  [29] "long time ago"           "thank follow us"        
-##  [31] "three year ago"          "two week ago"           
-##  [33] "us district court"       "wall street journal"    
-##  [35] "cant wait till"          "follow look forward"    
-##  [37] "go go go"                "gov chris christi"      
-##  [39] "just want say"           "let just say"           
-##  [41] "look forward read"       "past two year"          
-##  [43] "spend much time"         "st patrick day"         
-##  [45] "us district judg"        "cant wait go"           
-##  [47] "come see us"             "commerci real estat"    
-##  [49] "counti prosecutor offic" "dont feel like"         
-##  [51] "dont think can"          "everi singl day"        
-##  [53] "get work done"           "hope see soon"          
-##  [55] "ive ever seen"           "just want make"         
-##  [57] "last two year"           "make sure get"          
-##  [59] "million last year"       "new york ny"            
-##  [61] "now im go"               "sever year ago"         
-##  [63] "thank much follow"       "thank rt hope"          
-##  [65] "time last year"          "told associ press"      
-##  [67] "accord court document"   "amazon servic llc"      
-##  [69] "cant wait til"           "chicago chicago illinoi"
-##  [71] "come join us"            "coupl week ago"         
-##  [73] "didnt know anyth"        "dont want go"           
-##  [75] "everi day get"           "feel much better"       
-##  [77] "follow follow follow"    "follow us twitter"      
-##  [79] "get job done"            "go back bed"            
-##  [81] "go long way"             "green bay packer"       
-##  [83] "happi valentin day"      "ill never forget"       
-##  [85] "ive never seen"          "just around corner"     
-##  [87] "look forward meet"       "look forward work"      
-##  [89] "major leagu basebal"     "martin luther king"     
-##  [91] "much better now"         "new england patriot"    
-##  [93] "past five year"          "peopl dont know"        
-##  [95] "point per game"          "right around corner"    
-##  [97] "right now im"            "runner score posit"     
-##  [99] "senior vice presid"      "spend lot time"
+##   [9] "feel like im"            "new york time"          
+##  [11] "cant wait get"           "dream come true"        
+##  [13] "first time sinc"         "im look forward"        
+##  [15] "want make sure"          "cinco de mayo"          
+##  [17] "dont know im"            "five year ago"          
+##  [19] "hate job hate"           "make feel like"         
+##  [21] "paintbal marker upgrad"  "st loui counti"         
+##  [23] "thank everyon came"      "world war ii"           
+##  [25] "dakota workforc connect" "job hate job"           
+##  [27] "make feel better"        "new year eve"           
+##  [29] "north dakota workforc"   "rock n roll"            
+##  [31] "dont even know"          "g basal diet"           
+##  [33] "hut hut hut"             "incorpor item c"        
+##  [35] "item c pp"               "ive ever seen"          
+##  [37] "ive never seen"          "long time ago"          
+##  [39] "omg omg omg"             "thank follow us"        
+##  [41] "three year ago"          "two week ago"           
+##  [43] "us district court"       "wall street journal"    
+##  [45] "cant wait till"          "follow look forward"    
+##  [47] "go go go"                "gov chris christi"      
+##  [49] "just want say"           "let just say"           
+##  [51] "look forward read"       "now im go"              
+##  [53] "past two year"           "spend much time"        
+##  [55] "st patrick day"          "us district judg"       
+##  [57] "cant wait go"            "column column column"   
+##  [59] "come see us"             "commerci real estat"    
+##  [61] "counti prosecutor offic" "dont feel like"         
+##  [63] "dont think can"          "everi singl day"        
+##  [65] "get work done"           "hope see soon"          
+##  [67] "im go go"                "just want make"         
+##  [69] "last two year"           "make sure get"          
+##  [71] "million last year"       "new york ny"            
+##  [73] "right now im"            "sever year ago"         
+##  [75] "thank much follow"       "thank rt hope"          
+##  [77] "time last year"          "told associ press"      
+##  [79] "accord court document"   "amazon servic llc"      
+##  [81] "boy big sword"           "cant wait til"          
+##  [83] "chicago chicago illinoi" "come join us"           
+##  [85] "coupl week ago"          "didnt know anyth"       
+##  [87] "diet g basal"            "dont want go"           
+##  [89] "everi day get"           "feel much better"       
+##  [91] "follow follow follow"    "follow us twitter"      
+##  [93] "get job done"            "go back bed"            
+##  [95] "go long way"             "green bay packer"       
+##  [97] "happi valentin day"      "ill never forget"       
+##  [99] "im go get"               "im go take"
 ```
 
 ## Appendix B. Full Code in R <a name="appendixB"></a>
@@ -397,54 +429,71 @@ lines_news <- sample(lines_news, summ$Lines_counts[3]*percent, replace=FALSE)
 myCorpus <- VCorpus(VectorSource(c(lines_tw, lines_blog, lines_news)))
 rm(lines_tw, lines_blog, lines_news)
 removeURL <- function(x) {gsub("(f|ht)tp(s?)://\\S+", "", x, perl=T)}
-removeSpecial <- function(x) {gsub("[^[:alnum:] ]", "", x,perl=T)}
+removeSpecial <- function(x) {gsub("[^a-zA-Z ]+", "", x)} # except space
+removeEmpty <- function(x){!is.na(content(x)) & trimws(content(x)) != ""}
 
+# Preprocessing
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus <- tm_map(myCorpus, content_transformer(removeURL)) 
+myCorpus <- tm_map(myCorpus, content_transformer(removeURL))
 myCorpus <- tm_map(myCorpus, removePunctuation)
 myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial))
+
 myCorpus <- tm_map(myCorpus, removeWords, stopwords("english"))
-myCorpus <- tm_map(myCorpus, content_transformer(removeSpecial)) 
+
+# Remove documents with empty content to reduce size
+myCorpus <- tm_filter(myCorpus, removeEmpty)
 
 # Stemming
 myCorpus <- tm_map(myCorpus, stemDocument)
 
 rm(removeURL, removeSpecial)
-
-print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
+print(paste0('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 
 # 2. N-gram
-tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 1, n_min = 1))}
-tokenize_bigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 2, n_min = 2))}
-tokenize_trigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 3, n_min = 3))}
+# create N-gram tern document matrix from a corpus
+createNgram <- function(myCorpus, ngram = 1, lowfreq = NA) {
+    toToken <- function(x) {
+        # x contains x[1]$content and x[2]$meta
+        unlist(tokenize_ngrams(content(x), n = ngram, n_min = ngram))
+    }
+    
+    # TDM automatically discards words less than three characters. 
+    tdm <- TermDocumentMatrix(myCorpus, control = list(tokenize = toToken,
+                                                       wordLengths=c(1, Inf)))
+
+    if (!is.na(lowfreq)) {
+        # remove infrequent words to reduce size
+        freqTerms <- findFreqTerms(tdm, lowfreq = lowfreq)
+        tdm <- tdm[freqTerms, ]
+    }
+    tdm
+}
+
+convertTdmToDf <- function(tdm) {
+    # Reduce documents dimension and convert to dataframe
+    # df <- data.frame(rowSums(as.matrix(tdm))) # exhaust memory
+    df <- slam::row_sums(tdm, na.rm = T)
+    df <- data.frame(word = names(df), freq = as.integer(df))  %>%
+        arrange(desc(freq))
+    rm(tdm)
+    print(paste0("Ngram size: ", format(object.size(df), units = "Mb")))
+    df
+}
 
 # N-gram
 # removeSparseTerms: remove sparse words to contain around 1000 frequent words
-tdm1 <- TermDocumentMatrix(myCorpus)
-tdm1 <- removeSparseTerms(tdm1, 0.9975) 
-tdm2 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_bigrams))
-tdm2 <- removeSparseTerms(tdm2, 0.9997) 
-tdm3 <- TermDocumentMatrix(myCorpus, control = list(tokenize = tokenize_trigrams))
-tdm3 <- removeSparseTerms(tdm3, 0.99994) 
-rm(myCorpus)
 
 # Unigram
-freq1 <- rowSums(as.matrix(tdm1)) # Create frequency for each token
-freq1 <- subset(freq1, freq1 >= 5)
-freq1 <- data.frame(word = names(freq1), freq = as.integer(freq1)) %>%
-        arrange(desc(freq))
-
+tdm1 <- createNgram(myCorpus, n = 1, lowfreq = 1)
+freq1 <- convertTdmToDf(tdm1) # Create a frequency sorted dataframe for tokens
 # Bigram
-freq2 <- rowSums(as.matrix(tdm2)) # Create frequency for each token
-freq2 <- subset(freq2, freq2 >= 5)
-freq2 <- data.frame(word = names(freq2), freq = as.integer(freq2)) %>%
-    arrange(desc(freq)) 
-
-# Trigram
-freq3 <- rowSums(as.matrix(tdm3)) # Create frequency for each token
-freq3 <- subset(freq3, freq3 >= 2)
-freq3 <- data.frame(word = names(freq3), freq = as.integer(freq3)) %>%
-    arrange(desc(freq))
+tdm2 <- createNgram(myCorpus, n = 2, lowfreq = 1)
+freq2 <- convertTdmToDf(tdm2) # Create a frequency sorted dataframe for tokens
+# Trigram 
+tdm3 <- createNgram(myCorpus, n = 3, lowfreq = 1)
+freq3 <- convertTdmToDf(tdm3) # Create a frequency sorted dataframe for tokens
+rm(myCorpus)
 
 # Plot Unigram
 ggplot(head(freq1,20), aes(x=reorder(word, freq), y=freq)) +
