@@ -100,6 +100,27 @@ close(conn_tw)
 close(conn_blog)
 close(conn_news)
 rm(url_tw, url_blog, url_news, conn_blog, conn_news, conn_tw)
+
+loadData <- function (url, sampleRate) {
+    # Load data
+    conn <- file(url,open="r")
+    lines <-readLines(url)  
+    close(conn)
+    lines
+    
+    # create a list of random variables
+    set.seed(1234)
+    lines <- sample(lines, length(lines)*sampleRate, replace=FALSE)
+    
+    # Print out file information
+    print(data.frame('Lines_counts' = length(lines), 
+                     'Word_counts' = sum(nchar(lines)), 
+                     'File_size' = format(object.size(lines), units = "Mb"),
+                     row.names = c(url)))
+    lines
+}
+
+
 ```
 #### Examples of Twitter data:
 ```{r echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
@@ -183,7 +204,7 @@ myCorpus <- tm_map(myCorpus, stemDocument)
 
 rm(removeURL, removeSpecial)
 
-print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
+print(paste0('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 ``` 
 
 #### Examples of our corpus after processing:
@@ -439,7 +460,7 @@ myCorpus <- tm_map(myCorpus, stemDocument)
 
 rm(removeURL, removeSpecial)
 
-print(c('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
+print(paste0('Corpus size after cleaning: ', format(object.size(myCorpus), units = "Mb")))
 
 # 2. N-gram
 tokenize_unigrams <- function(x) {unlist(tokenize_ngrams(as.character(unlist(x)), n = 1, n_min = 1))}
