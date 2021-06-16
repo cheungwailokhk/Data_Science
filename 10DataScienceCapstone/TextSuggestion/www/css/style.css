@@ -1,0 +1,26 @@
+/* Get a fancy font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+@import url(https://fonts.gstatic.com/s/librefranklin/v2/PFwjf3aDdAQPvNKUrT3U7yzLtA-61L0zjfpz7YlT3Q0.woff2)
+
+
+body {
+  background-color: white;
+  color: black;
+}
+
+/* Change header text to imported font */
+h2 {
+  font-family: 'Libre Franklin';
+  font-style: normal;
+}
+
+#writeBtn {
+  visibility:hide;
+}
+
+/* visible */
+.row.suggestion {
+    margin-left: 5px;
+    margin-bottom: 3px;
+}
+
