@@ -1,7 +1,7 @@
 ---
 title: "Text Suggestion Presentation"
+subtitle: "https://cwl286.shinyapps.io/TextSuggestion/"
 author: "cwl"
-date: "15/06/2021"
 output:
   ioslides_presentation:
     css: ./data/presentation/style.css
@@ -59,8 +59,10 @@ img2 <- readPNG("./data/presentation/user.png")
 ```
 
 ## Futher Information
+- Shiny application: [Text Suggestion](https://cwl286.shinyapps.io/TextSuggestion/)
 - View [Source](https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion)
-- [Data Science Capstone](https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science)
+- View course information [(Data Science Capstone)](https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science)
 - Report [bug](https://github.com/cwl286/datasciencecoursera/issues)
+
 
 

@@ -1,13 +1,17 @@
 slides > slide.title-slide hgroup h1 {
       font-weight: bold;
       font-size: 20pt;
-      bottom: 20%;
+    }
+    
+slides > slide.title-slide hgroup h2 {
+      font-weight: bold;
+      font-size: 16pt;
     }
 
 slides > slide.title-slide {
   display: block;
   background-image: url("./app.png");
   background-repeat: no-repeat;
-  background-size: 40% 30%;
+  background-size: 30% 20%;
   background-position: center;
 }
