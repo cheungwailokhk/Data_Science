@@ -57,7 +57,7 @@ ui <- shinyUI(
                                           rows = 7),
                             numericInput(inputId = "numericInput",
                                          label = "Maximum number of suggestion",
-                                         value = 40, min = 5, max = 100
+                                         value = 40, min = 5, max = 50
                             ),
                             checkboxInput(inputId = "checkbox", 
                                           label =" Auto-Suggestion", 
