@@ -1,22 +1,20 @@
-<h3>Application features:</h3>
-<ul style="font-size: 14px; line-height: 18px; ">
-<li>Automatic suggestion</li>
-<li>Build your own model</li>
-<li>Generate "composition"</li>
-<li>Interactive selection</li>
-<li>Suggestion visualization</li>
+<h3>Information:</h3>
+<p>This Shiny application is the final part of the project (<a href="https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science" target="_blank" rel="noopener">Data Science Capstone</a>) offered by Johns Hopkins University on Coursera. This project is under a specialization program, which consists of 9 courses and this project. There are eight tasks in total, and this application aims to achieve four tasks.</p>
+<ul>
+<li>Task 1: Understanding the Problem</li>
+<li>Task 2: Data acquisition and cleaning</li>
+<li>Task 3: Exploratory analysis</li>
+<li>Task 4: <strong>Statistical modeling</strong></li>
+<li>Task 5: <strong>Predictive modeling</strong></li>
+<li>Task 6: <strong>Creative exploration</strong></li>
+<li>Task 7: <strong>Creating a data product</strong></li>
+<li>Task 8: Creating a short slide deck pitching your product</li>
 </ul>
-<h3>How to use:</h3>
-<ul style="list-style-type: circle; line-height: 22px;">
-<li>You can type a text directly in the input box to search for suggestions for the next word. Suggested words are in the Wordcloud and the bar chart.</li>
-<li>Clicking the word cloud and the bar chart can input a suggested word.</li>
-<li>If you select the Auto-Suggestion, suggestions are automatically updated in the plots based on your input.</li>
-<li>You can build your model by uploading a text file. Please make sure to upload a .txt file.<br />(Example: example.txt)</li>
-<li>In the building process, numbers, punctuations, English stopwords, any special characters, and non-English words are automatically removed.</li>
-<li>After you built your model, you can select to use our default model or your prediction model.</li>
-<li>In the "For Fun" tab, our application can generate an English-like composition based on your input.</li>
-</ul>
+<p>See more information about our first four tasks and our <strong>dataset</strong> in this <a href="https://htmlpreview.github.io/?https://github.com/cwl286/datasciencecoursera/blob/master/10DataScienceCapstone/Milestone/Milestone.html" target="_blank" rel="noopener noreferrer">report</a> or at <a href="https://github.com/cwl286/datasciencecoursera/blob/master/10DataScienceCapstone/Milestone/Milestone.md" target="_blank" rel="noopener">GitHub</a>.</p>
+<h3>Model:</h3>
+<p style="color: #0e101a; background: transparent; margin-top: 0pt; margin-bottom: 0pt;"><span style="color: #0e101a; background: transparent; margin-top: 0pt; margin-bottom: 0pt;" data-preserver-spaces="true">Our application applies&nbsp;</span><a class="editor-rtfLink" style="color: #0e101a; background: transparent; margin-top: 0pt; margin-bottom: 0pt; ; color: #4a6ee0;" href="https://en.wikipedia.org/wiki/N-gram" target="_blank" rel="noopener"><span style="color: #0e101a; background: transparent; margin-top: 0pt; margin-bottom: 0pt; ; color: #4a6ee0;" data-preserver-spaces="true">N-gram</span></a><span style="color: #0e101a; background: transparent; margin-top: 0pt; margin-bottom: 0pt;" data-preserver-spaces="true">&nbsp;to build our model. We use the dataset provided in the course to train Bigram, Trigram, 5-grams and 7-gram. During the training process, we convert words into lowercase. We remove URLs, punctuation, numbers, English stopwords, and special characters. To reduce the N-gram size, we ignore sparse words and keep most coverage of unique terms.</span></p>
 <h3>Further information:</h3>
+<p><em>Developer</em>: cwl, Hong Kong</p>
 <p><em>Course: <a href="https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science" target="_blank" rel="noopener noreferrer">Data Science Capstone</a> offered by Johns Hopkins University on Coursera</em></p>
 <p><em>Report a <a href="https://github.com/cwl286/datasciencecoursera/issues">bug,</a> view the <a href="https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion" target="_blank" rel="noopener">source</a> or view the <a href="https://github.com/cwl286/datasciencecoursera/blob/master/10DataScienceCapstone/TextSuggestion/Presentation.pdf" target="_blank" rel="noopener">presentation</a>.<br /></em></p>
 <p>&nbsp;</p>
