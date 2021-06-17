@@ -1,11 +1,15 @@
+#   Author: cwl
+#   Date: 15/06/2021
+#   GitHub: https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion
 #
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
+#   This source is for the Shiny server
 #
-# Find out more about building applications with Shiny here:
+#   This source requires ui.R, server.R, utils.R, and dataframe objects to run.
+#   NgramsBuilders.R build the dataframe objects (./data/N2gram.rds, ./data/N3gram.rds, 
+#   ./data/N5gram.rds, ./data/N7gram.rds)
 #
-#    http://shiny.rstudio.com/
 #
+
 require(shiny); require(shinyjs)
 require(plotly);require(wordcloud2); require(dplyr)
 require(tm); require(SnowballC); require(stopwords); 
@@ -87,7 +91,8 @@ server <- shinyServer(function(input, output, session) {
     observeEvent(input$process, {
         shinyjs::disable("process") # Avoid repeatedly clicking
         # Preprocessing
-        updateActionButton(inputId = "process", label = "Preprocessing Corpus")
+        runjs("document.getElementById('process').innerHTML = 'Preprocessing Corpus")
+        
         inputCorpus <- VCorpus(VectorSource(loadData(urls = c(v$input_path), samplePercent = 1)))
         inputCorpus <- cleanCorpus(inputCorpus, removeStopwords = FALSE,
                                   isStemming = FALSE,
@@ -140,6 +145,9 @@ server <- shinyServer(function(input, output, session) {
             start = trimws(input$text)
             for (i in 1:100) {
                 words <- suggestWordByStatus(start)
+                if (nrow(words) == 0) {
+                    break
+                }
                 # sample one word from top 5 sugggestion
                 suggestion <- head(words, 5)$lastPart 
                 start <- paste(start, sample(suggestion, 1))
@@ -152,7 +160,7 @@ server <- shinyServer(function(input, output, session) {
 
     # Monitor the change in the tag panel
     observeEvent(input$tabsPanel, {
-        if (input$tabsPanel == "Fun (Composition)") {
+        if (input$tabsPanel == "For Fun") {
             shinyjs::show("write")
         } else {
             shinyjs::hide("write")

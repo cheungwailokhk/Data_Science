@@ -1,5 +1,15 @@
+#   Author: cwl
+#   Date: 15/06/2021
+#   GitHub: https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion
+#   
+#   This source is to build the dataframe objects (./data/N2gram.rds, ./data/N3gram.rds, 
+#   ./data/N5gram.rds, ./data/N7gram.rds)
+# 
+#
+#
 source("./utils.R")
 
+# Corpus source: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
 # Variables for corpus
 url_tw <- "./data/en_US.twitter.txt"
 url_blog <- "./data/en_US.blogs.txt"
@@ -45,7 +55,7 @@ print(paste0('n gram: ', format(object.size(N3gram), units = "Mb")))
 print(paste0('n gram: ', format(object.size(N5gram), units = "Mb")))
 print(paste0('n gram: ', format(object.size(N7gram), units = "Mb")))
 
-# Reduce file, while keeping some coverage
+# Reduce file size, while keeping some coverage
 df2 <- N2gram[1:calculateWordCoverage(N2gram,0.8),] # Bigram with 80% coverage = 10 Mb
 df3 <- N3gram[1:calculateWordCoverage(N3gram,0.6),] # Trigram with 60% coverage = 25.4 Mb
 df5 <- N5gram[1:calculateWordCoverage(N5gram,0.5),] # 5grams with 40% coverage = 50.8 Mb

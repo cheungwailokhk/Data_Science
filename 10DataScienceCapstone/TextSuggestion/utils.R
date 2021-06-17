@@ -1,3 +1,10 @@
+#   Author: cwl
+#   Date: 15/06/2021
+#   GitHub: https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion
+#
+#   This source contains functions to build Ngram and plots.
+#
+
 # Load libraries
 require(tm); require(SnowballC); require(stopwords); 
 require(tokenizers);  require(tidyr); require(dplyr);  
@@ -117,19 +124,19 @@ suggestWord <- function(N2gram, N3gram, N5gram, N7gram, sentence) {
         # 7gram
         sentence <- paste(sentence_tokens[(len-5):len],  collapse = " ")
         result <- N7gram[N7gram$firstPart==sentence,]
-        if (length(dim(result)[1]) > 1) {return (result)}
+        if (length(nrow(result)) > 1) {return (result)}
     }
     if (len >= 4) {
         # 5gram
         sentence <- paste(sentence_tokens[(len-3):len],  collapse = " ")
         result <- N5gram[N5gram$firstPart==sentence,]
-        if (length(dim(result)[1]) > 1) {return (result)}
+        if (length(nrow(result)) > 1) {return (result)}
     }
     if (len >= 2) {
         # Trigram
         sentence <- paste(sentence_tokens[(len-1):len],  collapse = " ")
         result <- N3gram[N3gram$firstPart==sentence,]$lastPart
-        if (length(dim(result)[1]) > 1) {return (result)}
+        if (length(nrow(result)) > 1) {return (result)}
     }
     # Bigram
     sentence <- paste(sentence_tokens[len],  collapse = " ")
@@ -160,7 +167,7 @@ plotyBarchart <- function(df, chartTitle, topN = 20, xTitle ="Words", yTitle = "
     fig <- plot_ly(data, x = ~freq, y = ~word, 
                    type = "bar",
                    # type = 'scatter',mode   = 'markers',
-                   height=max(400, dim(data)[1]*13))
+                   height=max(400, nrow(data)*13))
     fig <- fig %>% layout(title = "Top suggestion",
                           xaxis = list(title = ""),
                           # yaxis = list(title = ""))
