@@ -1,0 +1,67 @@
+---
+title: "Text Suggestion Presentation"
+author: "cwl"
+date: "15/06/2021"
+output: 
+    ioslides_presentation:
+        css: ./data/presentation/style.css
+        widescreen: true
+        smaller: true
+        transition: faster
+---
+
+
+## Introduction
+<h3>Objective</h3>
+- Build a predictive model of English text
+- Develop an interface for our model via a Shiny application.
+- When a user type text, he can see predictions for his next word
+
+
+<h3>Background</h3>
+- Final task in the [Data Science Capstone](https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science) to create a usable data product 
+
+<h3>Data</h3>
+- Provided by the [Data Science Capstone](https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science)
+- en_US.blogs.txt, en_US.news.txt, en_US.twitter.txt
+
+
+## Model
+- Apply [N-gram](https://en.wikipedia.org/wiki/N-gram) to build our model
+- (N-gram: a contiguous sequence of n items from a given sample of text)
+
+<h3>Preprocessing</h3>
+- Remove URLs
+- Remove punctuation
+- Remove numbers
+- Remove English stopwords
+- Remove special characters
+
+<h3>N-gram</h3>
+- Train Bigram, Trigram, 5-grams and 7-gram
+
+## Application Features
+- Automatic suggestion
+- Build your own model
+- Generate "composition"
+- Interactive selection
+- Suggestion visualization
+
+
+```{r fig.width=5, fig.height=3,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("./data/presentation/click.png")
+ grid.raster(img)
+```
+```{r fig.width=2.5, fig.height=4,echo=FALSE}
+img2 <- readPNG("./data/presentation/user.png")
+ grid.raster(img2)
+```
+
+## Futher Information
+- View [Source](https://github.com/cwl286/datasciencecoursera/tree/master/10DataScienceCapstone/TextSuggestion)
+- [Data Science Capstone](https://www.coursera.org/learn/data-science-project?specialization=jhu-data-science)
+- Report [bug](https://github.com/cwl286/datasciencecoursera/issues)
+
+

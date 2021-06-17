@@ -23,16 +23,6 @@ ui <- shinyUI(
         # Application title
         titlePanel("Predictive Text Suggestion"),    
         tabsetPanel( id = "mainTabsPanel",
-                     
-             tabPanel(
-                 id = "aboutTab", title = "About",
-                 includeHTML("./about.html")
-             ),
-             tabPanel(
-                 id = "bkgTab", title = "Background",
-                 includeHTML("./background.html")
-             ),
-                     
             tabPanel( id = "suggestionTab", title = "Suggestion",
                 # tabPanel(title = "suggestionTab",),
                 # Sidebar
@@ -109,7 +99,14 @@ ui <- shinyUI(
                         )
                     )
                 )
-                
+            ), 
+            tabPanel(
+                id = "aboutTab", title = "About",
+                includeHTML("./data/html/about.html")
+            ),
+            tabPanel(
+                id = "bkgTab", title = "Background",
+                includeHTML("./data/html/background.html")
             )
         )
     )

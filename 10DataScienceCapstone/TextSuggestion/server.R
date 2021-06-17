@@ -33,9 +33,8 @@ server <- shinyServer(function(input, output, session) {
         v$N3gram <- readRDS("./data/N3gram.rds")
         v$N5gram <- readRDS("./data/N5gram.rds")
         v$N7gram <- readRDS("./data/N7gram.rds")
-        v$suggestion_df <- v$N5gram # initial suggestion
+        v$suggestion_df <- v$N7gram # initial suggestion
     })
-    
     
     # Plot barchart
     output$barchart <- renderPlotly({
