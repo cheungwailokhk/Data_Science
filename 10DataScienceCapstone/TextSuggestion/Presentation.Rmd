@@ -2,12 +2,11 @@
 title: "Text Suggestion Presentation"
 author: "cwl"
 date: "15/06/2021"
-output: 
-    ioslides_presentation:
-        css: ./data/presentation/style.css
-        widescreen: true
-        smaller: true
-        transition: faster
+output:
+  ioslides_presentation:
+    css: ./data/presentation/style.css
+    smaller: yes
+    transition: faster
 ---
 
 

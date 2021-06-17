@@ -3,9 +3,9 @@ title: "Tasks in Developing Data Products"
 author: "cwl"
 date: "6/5/2021"
 output:
-  slidy_presentation: default
   pdf_document:
     latex_engine: xelatex
+  slidy_presentation: default
   ioslides_presentation: default
 ---
 
@@ -14,6 +14,7 @@ output:
 
 This is a peer assessed assignment in the Cousera Developing Data Products by Johns Hopkins University). This aimed to create a Shiny application and deploy it on Rstudio's servers. 
 
+[https://cwl286.shinyapps.io/PA3_shiny/](https://cwl286.shinyapps.io/PA3_shiny/)
 
 
 This Shiny application was trying to visualize world's demographics data from the [World Bank](https://www.worldbank.org/en/home). It visualized 5 dataset, which were collected on 04/06/2021. It was created by Shiny and Plotly library in R language to provide basic interactive features.
